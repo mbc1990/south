@@ -8,11 +8,15 @@ use sdl2::keyboard::Keycode;
 use sdl2::video::{Window, WindowContext};
 use sdl2::render::{Canvas, Texture, TextureCreator, WindowCanvas};
 use rand::Rng;
+use world::World;
 use std::f64;
 
+mod world;
+mod ice;
 
 pub const WIDTH: u32 = 800;
 pub const HEIGHT: u32 = 500;
+
 
 
 fn draw_ice(canvas: &mut WindowCanvas, pos_x: i32, pos_y: i32, size: i32) {
@@ -26,11 +30,13 @@ fn draw_ice(canvas: &mut WindowCanvas, pos_x: i32, pos_y: i32, size: i32) {
 
     let point_x = pos_x;
     let point_y = pos_y + size;
-
+    let mut rng = rand::thread_rng();
     for angle in angles {
+        let zig_zag_factor = rng.gen_range(0, size);
+        let zig_zagged_point_y = pos_y + zig_zag_factor;
         let angle_rad = angle as f64 * f64::consts::PI / 180 as f64;
-        let r_x = angle_rad.cos() * (point_x as f64 - pos_x as f64) - angle_rad.sin() * (point_y as f64- pos_y as f64) + pos_x as f64;
-        let r_y = angle_rad.sin() * (point_x as f64 - pos_x as f64) - angle_rad.cos() * (point_y as f64- pos_y as f64) + pos_x as f64;
+        let r_x = angle_rad.cos() * (point_x as f64 - pos_x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- pos_y as f64) + pos_x as f64;
+        let r_y = angle_rad.sin() * (point_x as f64 - pos_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- pos_y as f64) + pos_x as f64;
         points.push(Point::new(r_x as i32, r_y as i32));
     }
 
@@ -74,7 +80,7 @@ fn main() -> Result<(), String> {
     // clears the canvas with the color we set in `set_draw_color`.
     canvas.clear();
 
-    draw_ice(&mut canvas, 200, 200, 50);
+    // draw_ice(&mut canvas, 200, 200, 50);
 
     // However the canvas has not been updated to the window yet, everything has been processed to
     // an internal buffer, but if we want our buffer to be displayed on the window, we need to call
@@ -82,6 +88,8 @@ fn main() -> Result<(), String> {
     canvas.present();
 
     let mut event_pump = sdl_context.event_pump()?;
+
+    let mut world = World::new(WIDTH, HEIGHT);
 
     let mut frame : u32 = 0;
     'running: loop {
@@ -106,7 +114,8 @@ fn main() -> Result<(), String> {
 
         canvas.set_draw_color(Color::RGB(6, 100, 193));
         canvas.clear();
-        draw_ice(&mut canvas, 200, 200, 50);
+        world.draw(&mut canvas);
+        // draw_ice(&mut canvas, 200, 200, 50);
         // TODO: Update game state here
         canvas.present();
         frame += 1;
