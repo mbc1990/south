@@ -15,7 +15,7 @@ mod world;
 mod ice;
 
 pub const WIDTH: u32 = 800;
-pub const HEIGHT: u32 = 500;
+pub const HEIGHT: u32 = 800;
 
 
 
@@ -90,6 +90,9 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let mut world = World::new(WIDTH, HEIGHT);
+    world.draw(&mut canvas);
+    canvas.present();
+
 
     let mut frame : u32 = 0;
     'running: loop {
@@ -115,8 +118,6 @@ fn main() -> Result<(), String> {
         canvas.set_draw_color(Color::RGB(6, 100, 193));
         canvas.clear();
         world.draw(&mut canvas);
-        // draw_ice(&mut canvas, 200, 200, 50);
-        // TODO: Update game state here
         canvas.present();
         frame += 1;
     }
