@@ -62,13 +62,6 @@ impl World {
 
         }
         return collisions;
-        /*
-        let collisions = self.ices.iter()
-            .filter(|other_ice| euc_distance(&other_ice.position, &ice.get_position()) < (other_ice.get_size() + ice.get_size() as u32) as f32)
-            .collect();
-
-        return collisions;
-        */
     }
 
     // same thing as the other one
@@ -110,13 +103,9 @@ impl World {
                 ice.position = ice.position.add(&ice.direction);
             }
 
-            // println!("Collisions: {:?}", collisions.clone());
 
             // Update position
             let dewonk_factor = rng.gen_range(0.9, 1.1);
-            // let dewonk_factor = 1.3;
-            // ice.position.x += ice.direction.x;
-            // ice.position.y += ice.direction.y;
             ice.position = ice.position.add(&ice.direction.mul(dewonk_factor));
         }
 
