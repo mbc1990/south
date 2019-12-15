@@ -8,7 +8,7 @@ use crate::vector::{Vector};
 #[derive(Debug, Clone)]
 pub struct Ice {
 
-    // TODO: Velocity, rotation, mass (maybe an InteractableElement trait or something)
+    // TODO: Rotation, mass (maybe an InteractableElement trait or something)
 
     pub direction: Vector,
 

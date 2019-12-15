@@ -79,14 +79,15 @@ impl World {
                     continue;
                 }
 
-                let n = ice.position.sub(&collision.position);
-
-                // ice.direction.x += 0.001* collision.direction.x;
-                // ice.direction.y += 0.001* collision.direction.y;
+                let n = ice.position.sub(&collision.position).normalize();
+                let a1 = ice.direction.dot(&n);
+                let a2 = collision.direction.dot(&n);
+                let optimized_p = (2.0 * (a1 - a2)) / 2.0;
+                let new_direction = ice.direction.sub(&n.mul(optimized_p));
+                ice.direction = new_direction;
             }
 
             // println!("Collisions: {:?}", collisions.clone());
-
 
             // Update position
             ice.position.x += ice.direction.x;
