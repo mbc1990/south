@@ -50,7 +50,7 @@ fn draw_ice(canvas: &mut WindowCanvas, pos_x: i32, pos_y: i32, size: i32) {
 }
 
 fn main() -> Result<(), String> {
-    println!("Hello, world!");
+    println!("Welcome to the Endurance demo");
 
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
@@ -90,6 +90,8 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let mut world = World::new(WIDTH, HEIGHT);
+    world.init_with_random_ice(50);
+    // world.init_test();
     world.draw(&mut canvas);
     canvas.present();
 
@@ -114,11 +116,12 @@ fn main() -> Result<(), String> {
         if frame >= 30 {
             frame = 0;
         }
-
+/*
         canvas.set_draw_color(Color::RGB(6, 100, 193));
         canvas.clear();
         world.draw(&mut canvas);
         canvas.present();
+        */
         frame += 1;
     }
 
