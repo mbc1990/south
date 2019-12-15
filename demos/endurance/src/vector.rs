@@ -11,7 +11,7 @@ impl Vector {
     pub fn sub(&self, vector: &Vector) -> Vector {
         return Vector {x: self.x - vector.x, y: self.y - vector.y}
     }
-    pub fn normalize(&self) -> Vector {
+    pub fn norm(&self) -> Vector {
         let magnitude = (self.x.powf(2.0) + self.y.powf(2.0)).sqrt();
         return Vector{x: self.x  / magnitude, y: self.y / magnitude};
     }

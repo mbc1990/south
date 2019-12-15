@@ -9,7 +9,8 @@ use sdl2::video::{Window, WindowContext};
 use sdl2::render::{Canvas, Texture, TextureCreator, WindowCanvas};
 use rand::Rng;
 use world::World;
-use std::f64;
+use std::{f64, thread, time};
+use std::time::{SystemTime, Instant};
 
 mod world;
 mod ice;
@@ -17,6 +18,7 @@ mod vector;
 
 pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
+pub const FPS: u32 = 60;
 
 
 fn main() -> Result<(), String> {
@@ -42,6 +44,7 @@ fn main() -> Result<(), String> {
     let mut canvas = window.into_canvas()
         .target_texture()
         .present_vsync()
+        .accelerated()
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -60,14 +63,16 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let mut world = World::new(WIDTH, HEIGHT);
-    world.init_with_random_ice(100);
+    world.init_with_random_ice(1000);
     // world.init_test();
     world.draw(&mut canvas);
     canvas.present();
 
-
-    let mut frame : u32 = 0;
+    let frame_length = 1000.0 / FPS as f32;
     'running: loop {
+        let frame_start = Instant::now();
+        let elapsed = frame_start.elapsed();
+
         // get the inputs here
         for event in event_pump.poll_iter() {
             match event {
@@ -83,15 +88,12 @@ fn main() -> Result<(), String> {
         }
 
         // update the game loop here
-        if frame >= 30 {
-            frame = 0;
-        }
         canvas.set_draw_color(Color::RGB(6, 100, 193));
         canvas.clear();
         world.tick();
         world.draw(&mut canvas);
         canvas.present();
-        frame += 1;
+        thread::sleep(time::Duration::from_millis(((frame_length - elapsed.as_millis() as f32) as u64)));
     }
 
 

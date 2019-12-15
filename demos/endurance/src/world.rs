@@ -27,7 +27,7 @@ impl World {
         let margin = 10;
         let mut rng = rand::thread_rng();
         while num_bergs > 0 {
-            let berg_size = rng.gen_range(5, 200);
+            let berg_size = rng.gen_range(5, 10);
             let x = rng.gen_range(berg_size + margin, self.size_x - (berg_size + margin));
             let y = rng.gen_range(berg_size + margin, self.size_y - (berg_size + margin));
             let berg = Ice::new(Vector{x:x as f32, y:y as f32}, berg_size);
@@ -55,6 +55,7 @@ impl World {
         return collisions;
     }
 
+    // same thing as the other one
     fn find_collisions_2<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
         let collisions = ices.iter()
             .filter(|other_ice| euc_distance(&other_ice.position, &ice.position) < (other_ice.size + ice.size) as f32)
@@ -67,6 +68,7 @@ impl World {
 
         // Find all collisions for each iceberg, updating velocities
 
+        let mut rng = rand::thread_rng();
         let current_ices = self.ices.clone();
         for mut ice in self.ices.iter_mut() {
 
@@ -79,19 +81,23 @@ impl World {
                     continue;
                 }
 
-                let n = ice.position.sub(&collision.position).normalize();
+                let n = ice.position.sub(&collision.position).norm();
                 let a1 = ice.direction.dot(&n);
                 let a2 = collision.direction.dot(&n);
                 let optimized_p = (2.0 * (a1 - a2)) / 2.0;
                 let new_direction = ice.direction.sub(&n.mul(optimized_p));
                 ice.direction = new_direction;
+                ice.position = ice.position.add(&ice.direction);
             }
 
             // println!("Collisions: {:?}", collisions.clone());
 
             // Update position
-            ice.position.x += ice.direction.x;
-            ice.position.y += ice.direction.y;
+            let dewonk_factor = rng.gen_range(0.9, 1.1);
+            // let dewonk_factor = 1.3;
+            // ice.position.x += ice.direction.x;
+            // ice.position.y += ice.direction.y;
+            ice.position = ice.position.add(&ice.direction.mul(dewonk_factor));
         }
 
     }
