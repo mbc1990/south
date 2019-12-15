@@ -81,7 +81,17 @@ fn main() -> Result<(), String> {
                 Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running
                 },
-                Event::KeyDown { keycode: Some(Keycode::Space), repeat: false, .. } => {
+                Event::KeyDown { keycode: Some(Keycode::W), repeat: true, .. } => {
+                    world.key_w();
+                },
+                Event::KeyDown { keycode: Some(Keycode::A), repeat: true, .. } => {
+                    world.key_a();
+                },
+                Event::KeyDown { keycode: Some(Keycode::S), repeat: true, .. } => {
+                    world.key_s();
+                },
+                Event::KeyDown { keycode: Some(Keycode::D), repeat: true, .. } => {
+                    world.key_d();
                 },
                 Event::MouseButtonDown { x, y, mouse_btn: MouseButton::Left, .. } => {
                 },

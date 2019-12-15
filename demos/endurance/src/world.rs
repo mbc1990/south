@@ -23,8 +23,25 @@ impl World {
     pub fn new(size_x: u32, size_y: u32) -> World {
         // Populate the world with some randomly positioned ice bergs
         let ice = Vec::new();
-        let boat = Boat::new(Vector{ x: 100.0, y: 100.0 });
+        let boat = Boat::new(Vector{ x: 400.0, y: 400.0 });
         World{size_x, size_y, ices: ice, boat: boat}
+    }
+
+    pub fn key_w(&mut self) {
+        let dir = Vector{x:0.0, y:-1.0};
+        self.boat.direction = self.boat.direction.add(&dir);
+    }
+    pub fn key_a(&mut self) {
+        let dir = Vector{x:-1.0, y:0.0};
+        self.boat.direction = self.boat.direction.add(&dir);
+    }
+    pub fn key_s(&mut self) {
+        let dir = Vector{x:0.0, y:1.0};
+        self.boat.direction = self.boat.direction.add(&dir);
+    }
+    pub fn key_d(&mut self) {
+        let dir = Vector{x:1.0, y:0.0};
+        self.boat.direction = self.boat.direction.add(&dir);
     }
 
     pub fn init_with_random_ice(&mut self, mut num_bergs: i32) {
@@ -79,8 +96,8 @@ impl World {
 
 
         // Boat collisions
+        /*
         let boat_collisions = self.find_collisions(&self.boat);
-        println!("Boat collisions: {:?}", boat_collisions.len());
 
         for collision in boat_collisions {
             let n = self.boat.position.sub(&collision.get_position()).norm();
@@ -91,9 +108,12 @@ impl World {
             self.boat.direction = new_direction;
             self.boat.position = self.boat.position.add(&self.boat.direction);
         }
+        */
 
         // Update the boat position even if it's not colliding
         self.boat.position = self.boat.position.add(&self.boat.direction);
+
+        println!("Boat direction: {:?}", self.boat.direction);
 
         let current_ices = self.ices.clone();
         let mut rng = rand::thread_rng();
