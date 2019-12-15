@@ -3,6 +3,7 @@ use sdl2::render::{Canvas, WindowCanvas};
 use rand::Rng;
 use sdl2::pixels::Color;
 use crate::vector::{Vector};
+use crate::physics_element::PhysicsElement;
 
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
@@ -41,9 +42,11 @@ impl Ice {
         let direction = Vector{x:rng.gen_range(-1.0, 1.0), y:rng.gen_range(-1.0, 1.0)};
         Ice{direction, position, size, zig_zags}
     }
+}
+impl PhysicsElement for Ice {
 
     // Draw the ice to the canvas
-    pub fn draw(&self, canvas: &mut WindowCanvas) {
+    fn draw(&self, canvas: &mut WindowCanvas) {
         canvas.set_draw_color(Color::RGB(228, 240, 253));
 
         // Rotate a point around the circle representing the iceberg, changing the radius of the point to create jagged edges
@@ -68,4 +71,13 @@ impl Ice {
             canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y));
         }
     }
+
+    fn get_size(&self) -> u32 {
+        return self.size;
+    }
+
+    fn get_position(&self) -> Vector {
+        return self.position;
+    }
+
 }

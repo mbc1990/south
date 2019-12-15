@@ -13,6 +13,7 @@ use std::{f64, thread, time};
 use std::time::{SystemTime, Instant};
 
 mod world;
+mod physics_element;
 mod ice;
 mod boat;
 mod vector;

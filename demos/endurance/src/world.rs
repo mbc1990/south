@@ -1,5 +1,6 @@
 use crate::ice::{Ice};
 use crate::boat::{Boat};
+use crate::physics_element::PhysicsElement;
 use crate::vector::{Vector};
 use sdl2::render::{Canvas, WindowCanvas};
 use sdl2::rect::Point;
@@ -34,7 +35,7 @@ impl World {
             let x = rng.gen_range(berg_size + margin, self.size_x - (berg_size + margin));
             let y = rng.gen_range(berg_size + margin, self.size_y - (berg_size + margin));
             let berg = Ice::new(Vector{x:x as f32, y:y as f32}, berg_size);
-            let collisions = self.find_collisions(&berg);
+            let collisions = self.find_collisions(Box::new(berg));
             if collisions.len() == 0 {
                 self.ices.push(berg);
                 num_bergs -= 1;
@@ -51,10 +52,21 @@ impl World {
 
     // Returns all icebergs that intersect with this one
     // Currently assumes all bergs are circles, which will need to be fixed
-    fn find_collisions(&self, ice: &Ice) -> Vec<&Ice> {
+    fn find_collisions(&self, ice: Box<PhysicsElement>) -> Vec<Box<PhysicsElement>> {
+        /*
+        let mut collisions: Vec<Box<PhysicsElement>> = Vec::new();
+        for other_ice in self.ices.iter() {
+            if euc_distance(&other_ice.position, &ice.get_position()) < (other_ice.get_size() + ice.get_size() as u32) as f32 {
+               collisions.push(ice.clone());
+            }
+
+        }
+        return collisions;
+        */
         let collisions = self.ices.iter()
-            .filter(|other_ice| euc_distance(&other_ice.position, &ice.position) < (other_ice.size + ice.size) as f32)
+            .filter(|other_ice| euc_distance(&other_ice.position, &ice.get_position()) < (other_ice.get_size() + ice.get_size() as u32) as f32)
             .collect();
+
         return collisions;
     }
 
@@ -71,8 +83,12 @@ impl World {
 
         // Find all collisions for each iceberg, updating velocities
 
-        let mut rng = rand::thread_rng();
         let current_ices = self.ices.clone();
+
+        // TODO: Get the colliding ice bergs, push them out of the way
+        // let boat_collisions =
+
+        let mut rng = rand::thread_rng();
         for mut ice in self.ices.iter_mut() {
             let collisions = World::find_collisions_2(&current_ices, &ice);
 
