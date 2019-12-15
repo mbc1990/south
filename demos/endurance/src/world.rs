@@ -1,4 +1,5 @@
 use crate::ice::{Ice};
+use crate::boat::{Boat};
 use crate::vector::{Vector};
 use sdl2::render::{Canvas, WindowCanvas};
 use sdl2::rect::Point;
@@ -9,7 +10,8 @@ use std::mem;
 pub struct World {
     size_x: u32,
     size_y: u32,
-    ices: Vec<Ice>
+    ices: Vec<Ice>,
+    boat: Boat
 }
 
 fn euc_distance(p1: &Vector, p2: &Vector) -> f32 {
@@ -20,14 +22,15 @@ impl World {
     pub fn new(size_x: u32, size_y: u32) -> World {
         // Populate the world with some randomly positioned ice bergs
         let ice = Vec::new();
-        World{size_x, size_y, ices: ice}
+        let boat = Boat::new(Vector{ x: 100.0, y: 100.0 });
+        World{size_x, size_y, ices: ice, boat: boat}
     }
 
     pub fn init_with_random_ice(&mut self, mut num_bergs: i32) {
         let margin = 10;
         let mut rng = rand::thread_rng();
         while num_bergs > 0 {
-            let berg_size = rng.gen_range(5, 10);
+            let berg_size = rng.gen_range(5, 300);
             let x = rng.gen_range(berg_size + margin, self.size_x - (berg_size + margin));
             let y = rng.gen_range(berg_size + margin, self.size_y - (berg_size + margin));
             let berg = Ice::new(Vector{x:x as f32, y:y as f32}, berg_size);
@@ -71,7 +74,6 @@ impl World {
         let mut rng = rand::thread_rng();
         let current_ices = self.ices.clone();
         for mut ice in self.ices.iter_mut() {
-
             let collisions = World::find_collisions_2(&current_ices, &ice);
 
             for collision in collisions {
@@ -106,5 +108,6 @@ impl World {
         for berg in &self.ices {
            berg.draw(canvas);
         }
+        self.boat.draw(canvas);
     }
 }
