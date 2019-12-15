@@ -96,7 +96,6 @@ impl World {
 
 
         // Boat collisions
-        /*
         let boat_collisions = self.find_collisions(&self.boat);
 
         for collision in boat_collisions {
@@ -104,11 +103,10 @@ impl World {
             let a1 = self.boat.direction.dot(&n);
             let a2 = collision.get_direction().dot(&n);
             let optimized_p = (2.0 * (a1 - a2)) / 2.0;
-            let new_direction = self.boat.direction.sub(&n.mul(optimized_p));
+            let new_direction = self.boat.direction.sub(&n.mul(optimized_p).mul(0.25));
             self.boat.direction = new_direction;
             self.boat.position = self.boat.position.add(&self.boat.direction);
         }
-        */
 
         // Update the boat position even if it's not colliding
         self.boat.position = self.boat.position.add(&self.boat.direction);
@@ -118,8 +116,21 @@ impl World {
         let current_ices = self.ices.clone();
         let mut rng = rand::thread_rng();
         for mut ice in self.ices.iter_mut() {
-            let collisions = World::find_collisions_2(&current_ices, &ice);
 
+
+            // If the ice is colliding with the boat, update it
+            if euc_distance(&self.boat.position, &ice.position) < (self.boat.size + ice.size) as f32 {
+                let n = ice.position.sub(&self.boat.position).norm();
+                let a1 = ice.direction.dot(&n);
+                let a2 = self.boat.direction.dot(&n);
+                let optimized_p = (2.0 * (a1 - a2)) / 2.0;
+                let new_direction = ice.direction.sub(&n.mul(optimized_p));
+                ice.direction = new_direction;
+                ice.position = ice.position.add(&ice.direction);
+            }
+
+            // if ice is colliding with other ice, also update it
+            let collisions = World::find_collisions_2(&current_ices, &ice);
             for collision in collisions {
 
                 // Don't collide with yourself
