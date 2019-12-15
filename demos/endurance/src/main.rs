@@ -18,37 +18,6 @@ pub const WIDTH: u32 = 800;
 pub const HEIGHT: u32 = 800;
 
 
-
-fn draw_ice(canvas: &mut WindowCanvas, pos_x: i32, pos_y: i32, size: i32) {
-    canvas.set_draw_color(Color::RGB(228, 240, 253));
-
-    let mut angles = Vec::new();
-    for i in 0..13 {
-        angles.push(i * 30);
-    }
-    let mut points = Vec::new();
-
-    let point_x = pos_x;
-    let point_y = pos_y + size;
-    let mut rng = rand::thread_rng();
-    for angle in angles {
-        let zig_zag_factor = rng.gen_range(0, size);
-        let zig_zagged_point_y = pos_y + zig_zag_factor;
-        let angle_rad = angle as f64 * f64::consts::PI / 180 as f64;
-        let r_x = angle_rad.cos() * (point_x as f64 - pos_x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- pos_y as f64) + pos_x as f64;
-        let r_y = angle_rad.sin() * (point_x as f64 - pos_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- pos_y as f64) + pos_x as f64;
-        points.push(Point::new(r_x as i32, r_y as i32));
-    }
-
-    println!("Points: {:?}", points);
-
-    for i in 0..points.len() - 1 {
-        let p1 = points.get(i).unwrap();
-        let p2 = points.get(i+1).unwrap();
-        canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y));
-    }
-}
-
 fn main() -> Result<(), String> {
     println!("Welcome to the Endurance demo");
 
@@ -90,7 +59,7 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let mut world = World::new(WIDTH, HEIGHT);
-    world.init_with_random_ice(50);
+    world.init_with_random_ice(1000);
     // world.init_test();
     world.draw(&mut canvas);
     canvas.present();
@@ -116,12 +85,10 @@ fn main() -> Result<(), String> {
         if frame >= 30 {
             frame = 0;
         }
-/*
         canvas.set_draw_color(Color::RGB(6, 100, 193));
         canvas.clear();
         world.draw(&mut canvas);
         canvas.present();
-        */
         frame += 1;
     }
 

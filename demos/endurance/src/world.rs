@@ -11,9 +11,7 @@ pub struct World {
 }
 
 fn euc_distance(p1: Point, p2: Point) -> f32 {
-    let dist = (((p1.x - p2.x).pow(2) + (p1.y - p2.y).pow(2)) as f32).sqrt();
-    println!("dist: {:?}", dist);
-    return dist;
+    (((p1.x - p2.x).pow(2) + (p1.y - p2.y).pow(2)) as f32).sqrt()
 }
 
 impl World {
@@ -27,20 +25,15 @@ impl World {
         let margin = 10;
         let mut rng = rand::thread_rng();
         while num_bergs > 0 {
-            let berg_size = rng.gen_range(25, 200);
+            let berg_size = rng.gen_range(5, 200);
             let x = rng.gen_range(berg_size + margin, self.size_x - (berg_size + margin));
             let y = rng.gen_range(berg_size + margin, self.size_y - (berg_size + margin));
-            println!("\n testing berg at {:?}, {:?} with size {:?}", x, y, berg_size);
             let berg = Ice::new(Point::new(x as i32, y as i32), berg_size);
-
             let collisions = self.find_collisions(&berg);
-            println!("Collisions: {:?}", collisions);
             if collisions.len() == 0 {
-                println!("Putting berg at {:?}, {:?} with size {:?}", x, y, berg_size);
                 self.ices.push(berg);
                 num_bergs -= 1;
-            } else {
-                println!("Rejecting berg at {:?}, {:?} with size {:?}", x, y, berg_size);
+                println!("{:?} bergs remaining", num_bergs);
             }
         }
     }
