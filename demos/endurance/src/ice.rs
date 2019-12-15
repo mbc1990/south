@@ -80,4 +80,8 @@ impl PhysicsElement for Ice {
         return self.position;
     }
 
+    fn get_direction(&self) -> Vector {
+        return self.direction;
+    }
+
 }

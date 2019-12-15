@@ -77,12 +77,25 @@ impl World {
 
         // Find all collisions for each iceberg, updating velocities
 
-        let current_ices = self.ices.clone();
 
-        // TODO: Get the colliding ice bergs, push them out of the way
+        // Boat collisions
         let boat_collisions = self.find_collisions(&self.boat);
         println!("Boat collisions: {:?}", boat_collisions.len());
 
+        for collision in boat_collisions {
+            let n = self.boat.position.sub(&collision.get_position()).norm();
+            let a1 = self.boat.direction.dot(&n);
+            let a2 = collision.get_direction().dot(&n);
+            let optimized_p = (2.0 * (a1 - a2)) / 2.0;
+            let new_direction = self.boat.direction.sub(&n.mul(optimized_p));
+            self.boat.direction = new_direction;
+            self.boat.position = self.boat.position.add(&self.boat.direction);
+        }
+
+        // Update the boat position even if it's not colliding
+        self.boat.position = self.boat.position.add(&self.boat.direction);
+
+        let current_ices = self.ices.clone();
         let mut rng = rand::thread_rng();
         for mut ice in self.ices.iter_mut() {
             let collisions = World::find_collisions_2(&current_ices, &ice);

@@ -6,6 +6,7 @@ pub trait PhysicsElement {
     fn draw(&self, canvas: &mut WindowCanvas);
     fn get_size(&self) -> u32;
     fn get_position(&self) -> Vector;
+    fn get_direction(&self) -> Vector;
 }
 
 
