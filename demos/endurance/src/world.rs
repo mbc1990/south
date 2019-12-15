@@ -1,4 +1,5 @@
-use crate::ice::{Ice, Vector};
+use crate::ice::{Ice};
+use crate::vector::{Vector};
 use sdl2::render::{Canvas, WindowCanvas};
 use sdl2::rect::Point;
 use rand::Rng;
@@ -54,11 +55,40 @@ impl World {
         return collisions;
     }
 
+    fn find_collisions_2<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
+        let collisions = ices.iter()
+            .filter(|other_ice| euc_distance(&other_ice.position, &ice.position) < (other_ice.size + ice.size) as f32)
+            .collect();
+        return collisions;
+    }
+
     // Called from event loop
     pub fn tick(&mut self) {
 
         // Find all collisions for each iceberg, updating velocities
+
+        let current_ices = self.ices.clone();
         for mut ice in self.ices.iter_mut() {
+
+            let collisions = World::find_collisions_2(&current_ices, &ice);
+
+            for collision in collisions {
+
+                // Don't collide with yourself
+                if collision.position.x == ice.position.x && collision.position.y == ice.position.y {
+                    continue;
+                }
+
+                let n = ice.position.sub(&collision.position);
+
+                // ice.direction.x += 0.001* collision.direction.x;
+                // ice.direction.y += 0.001* collision.direction.y;
+            }
+
+            // println!("Collisions: {:?}", collisions.clone());
+
+
+            // Update position
             ice.position.x += ice.direction.x;
             ice.position.y += ice.direction.y;
         }

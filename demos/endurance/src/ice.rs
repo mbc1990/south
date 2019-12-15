@@ -2,16 +2,10 @@ use sdl2::rect::Point;
 use sdl2::render::{Canvas, WindowCanvas};
 use rand::Rng;
 use sdl2::pixels::Color;
-
-
-#[derive(Debug)]
-pub struct Vector {
-    pub x: f32,
-    pub y: f32
-}
+use crate::vector::{Vector};
 
 // Represents a discrete piece of ice
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Ice {
 
     // TODO: Velocity, rotation, mass (maybe an InteractableElement trait or something)

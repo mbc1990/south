@@ -13,9 +13,10 @@ use std::f64;
 
 mod world;
 mod ice;
+mod vector;
 
-pub const WIDTH: u32 = 800;
-pub const HEIGHT: u32 = 800;
+pub const WIDTH: u32 = 800*2;
+pub const HEIGHT: u32 = 800*2;
 
 
 fn main() -> Result<(), String> {
