@@ -3,14 +3,24 @@ use sdl2::render::{Canvas, WindowCanvas};
 use rand::Rng;
 use sdl2::pixels::Color;
 
+
+#[derive(Debug)]
+pub struct Vector {
+    pub x: f32,
+    pub y: f32
+}
+
 // Represents a discrete piece of ice
 #[derive(Debug)]
 pub struct Ice {
 
     // TODO: Velocity, rotation, mass (maybe an InteractableElement trait or something)
 
+    pub direction: Vector,
+
     // Center of the berg
-    pub position: Point,
+    // pub position: Point,
+    pub position: Vector,
 
     // Maximum radius of circle underlying iceberg
     pub size: u32,
@@ -22,7 +32,7 @@ pub struct Ice {
 impl Ice {
 
     // Create an empty ice
-    pub fn new(position: Point, size: u32) -> Ice {
+    pub fn new(position: Vector, size: u32) -> Ice {
         let mut zig_zags = Vec::new();
         let mut rng = rand::thread_rng();
         for i in 0..12 {
@@ -32,7 +42,10 @@ impl Ice {
 
         // Last one should be the same as the first so the shape is closed
         zig_zags.push(*zig_zags.get(0).unwrap());
-        Ice{position, size, zig_zags}
+
+        // For now, randomly give a direction and velocity
+        let direction = Vector{x:rng.gen_range(-1.0, 1.0), y:rng.gen_range(-1.0, 1.0)};
+        Ice{direction, position, size, zig_zags}
     }
 
     // Draw the ice to the canvas
@@ -41,13 +54,13 @@ impl Ice {
 
         // Rotate a point around the circle representing the iceberg, changing the radius of the point to create jagged edges
         let point_x = self.position.x;
-        let point_y = self.position.y + self.size as i32;
+        let point_y = self.position.y + self.size as f32;
         let mut rng = rand::thread_rng();
         let mut points = Vec::new();
         for i in 0..13 {
             let angle = i * 30;
             let zig_zag_factor = self.zig_zags.get(i).unwrap();
-            let zig_zagged_point_y = self.position.y + *zig_zag_factor as i32;
+            let zig_zagged_point_y = self.position.y + *zig_zag_factor as f32;
             let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
             let r_x = angle_rad.cos() * (point_x as f64 - self.position.x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- self.position.y as f64) + self.position.x as f64;
             let r_y = angle_rad.sin() * (point_x as f64 - self.position.x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- self.position.y as f64) + self.position.y as f64;

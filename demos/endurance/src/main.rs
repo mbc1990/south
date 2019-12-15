@@ -59,7 +59,7 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let mut world = World::new(WIDTH, HEIGHT);
-    world.init_with_random_ice(1000);
+    world.init_with_random_ice(100);
     // world.init_test();
     world.draw(&mut canvas);
     canvas.present();
@@ -87,6 +87,7 @@ fn main() -> Result<(), String> {
         }
         canvas.set_draw_color(Color::RGB(6, 100, 193));
         canvas.clear();
+        world.tick();
         world.draw(&mut canvas);
         canvas.present();
         frame += 1;
