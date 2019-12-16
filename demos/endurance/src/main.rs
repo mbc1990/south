@@ -22,6 +22,12 @@ pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
 pub const FPS: u32 = 30;
 
+struct KeyboardState {
+    w: bool,
+    a: bool,
+    s: bool,
+    d: bool
+}
 
 fn main() -> Result<(), String> {
     println!("Welcome to the Endurance demo");
@@ -70,6 +76,7 @@ fn main() -> Result<(), String> {
     world.draw(&mut canvas);
     canvas.present();
 
+    let mut keyboard_state = KeyboardState{w:false, a:false, s:false, d:false};
     let frame_length = 1000.0 / FPS as f32;
     'running: loop {
         let frame_start = Instant::now();
@@ -78,26 +85,66 @@ fn main() -> Result<(), String> {
         // get the inputs here
         for event in event_pump.poll_iter() {
             match event {
+
+                // TODO: Refactor this somehow, it's a lot of noise for main()
                 Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running
                 },
-                Event::KeyDown { keycode: Some(Keycode::W), repeat: true, .. } => {
-                    world.key_w();
+                Event::KeyDown { keycode: Some(Keycode::W), repeat: false, .. } => {
+                    // world.key_w();
+                    println!("Key down W");
+                    keyboard_state.w = true;
                 },
-                Event::KeyDown { keycode: Some(Keycode::A), repeat: true, .. } => {
-                    world.key_a();
+                Event::KeyDown { keycode: Some(Keycode::A), repeat: false, .. } => {
+                    // world.key_a();
+                    println!("Key down A");
+                    keyboard_state.a = true;
                 },
-                Event::KeyDown { keycode: Some(Keycode::S), repeat: true, .. } => {
-                    world.key_s();
+                Event::KeyDown { keycode: Some(Keycode::S), repeat: false, .. } => {
+                    // world.key_s();
+                    println!("Key down S");
+                    keyboard_state.s = true;
                 },
-                Event::KeyDown { keycode: Some(Keycode::D), repeat: true, .. } => {
-                    world.key_d();
+                Event::KeyDown { keycode: Some(Keycode::D), repeat: false, .. } => {
+                    // world.key_d();
+                    println!("Key down D");
+                    keyboard_state.d = true;
+                },
+                Event::KeyUp { keycode: Some(Keycode::W), repeat: false, .. } => {
+                    keyboard_state.w = false;
+                    println!("Key up W");
+                },
+                Event::KeyUp { keycode: Some(Keycode::A), repeat: false, .. } => {
+                    keyboard_state.a = false;
+                    println!("Key up A");
+                },
+                Event::KeyUp { keycode: Some(Keycode::S), repeat: false, .. } => {
+                    keyboard_state.s = false;
+                    println!("Key up S");
+                },
+                Event::KeyUp { keycode: Some(Keycode::D), repeat: false, .. } => {
+                    keyboard_state.d = false;
+                    println!("Key up D");
                 },
                 Event::MouseButtonDown { x, y, mouse_btn: MouseButton::Left, .. } => {
                 },
                 _ => {}
             }
         }
+
+        if keyboard_state.w {
+            world.key_w();
+        }
+        if keyboard_state.a {
+            world.key_a();
+        }
+        if keyboard_state.s {
+            world.key_s();
+        }
+        if keyboard_state.d {
+            world.key_d();
+        }
+
 
         // update the game loop here
         canvas.set_draw_color(Color::RGB(6, 100, 193));

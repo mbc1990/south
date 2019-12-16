@@ -111,7 +111,7 @@ impl World {
         // Update the boat position even if it's not colliding
         self.boat.position = self.boat.position.add(&self.boat.direction);
 
-        println!("Boat direction: {:?}", self.boat.direction);
+        // println!("Boat direction: {:?}", self.boat.direction);
 
         let current_ices = self.ices.clone();
         let mut rng = rand::thread_rng();
