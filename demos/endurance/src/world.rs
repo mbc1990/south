@@ -6,7 +6,7 @@ use sdl2::render::{Canvas, WindowCanvas};
 use sdl2::rect::Point;
 use rand::Rng;
 use std::mem;
-
+use crate::BOAT_SIZE;
 
 pub struct World {
     size_x: u32,
@@ -23,7 +23,7 @@ impl World {
     pub fn new(size_x: u32, size_y: u32) -> World {
         // Populate the world with some randomly positioned ice bergs
         let ice = Vec::new();
-        let boat = Boat::new(Vector{ x: 400.0, y: 400.0 });
+        let boat = Boat::new(Vector{ x: (size_x / 2) as f32, y: (size_y / 2) as f32 }, BOAT_SIZE);
         World{size_x, size_y, ices: ice, boat: boat}
     }
 

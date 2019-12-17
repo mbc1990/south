@@ -21,6 +21,7 @@ mod vector;
 pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
 pub const FPS: u32 = 30;
+pub const BOAT_SIZE: u32 = 25;
 
 struct KeyboardState {
     w: bool,

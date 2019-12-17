@@ -18,8 +18,8 @@ pub struct Boat {
 
 impl Boat {
 
-    pub fn new(position: Vector ) -> Boat {
-        return Boat{direction: Vector{x: 0.0, y: 0.0}, position, size: 50};
+    pub fn new(position: Vector , size: u32) -> Boat {
+        return Boat{direction: Vector{x: 0.0, y: 0.0}, position, size};
     }
 
 }
@@ -27,7 +27,7 @@ impl Boat {
 impl PhysicsElement for Boat {
     fn draw(&self, canvas: &mut WindowCanvas) {
         canvas.set_draw_color(Color::RGB(213, 183, 143));
-        canvas.fill_rect(Rect::new((self.position.x - 25.0) as i32, (self.position.y - 25.0) as i32, 25, 25));
+        canvas.fill_rect(Rect::new((self.position.x - (self.size / 2) as f32) as i32, (self.position.y - (self.size / 2) as f32) as i32, self.size, self.size));
     }
 
     fn get_size(&self) -> u32 {
