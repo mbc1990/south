@@ -50,7 +50,7 @@ impl World {
         while num_bergs > 0 {
             let berg_size = rng.gen_range(5, 300);
             let x = rng.gen_range(berg_size + margin, self.size_x - (berg_size + margin));
-            let y = rng.gen_range(berg_size + margin, self.size_y - (berg_size + margin));
+            let y = rng.gen_range(-1 * self.size_y as i32 *4, self.size_y as i32 );
             let berg = Ice::new(Vector{x:x as f32, y:y as f32}, berg_size);
             let collisions = self.find_collisions(&berg);
             if collisions.len() == 0 {

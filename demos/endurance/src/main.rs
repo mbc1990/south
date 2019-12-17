@@ -20,8 +20,9 @@ mod vector;
 
 pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
-pub const FPS: u32 = 30;
+pub const FPS: u32 = 60;
 pub const BOAT_SIZE: u32 = 25;
+pub const NUM_BERGS: i32 = 1000;
 
 struct KeyboardState {
     w: bool,
@@ -72,7 +73,7 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let mut world = World::new(WIDTH, HEIGHT);
-    world.init_with_random_ice(1000);
+    world.init_with_random_ice(NUM_BERGS);
     // world.init_test();
     world.draw(&mut canvas);
     canvas.present();
@@ -81,7 +82,6 @@ fn main() -> Result<(), String> {
     let frame_length = 1000.0 / FPS as f32;
     'running: loop {
         let frame_start = Instant::now();
-        let elapsed = frame_start.elapsed();
 
         // get the inputs here
         for event in event_pump.poll_iter() {
@@ -152,8 +152,16 @@ fn main() -> Result<(), String> {
         canvas.clear();
         world.tick();
         world.draw(&mut canvas);
+
+        // TODO: Print fps
+
         canvas.present();
-        thread::sleep(time::Duration::from_millis(((frame_length - elapsed.as_millis() as f32) as u64)));
+
+        let elapsed = frame_start.elapsed();
+        println!("tick time: {:?}", elapsed);
+        if elapsed.as_millis() < frame_length as u128 {
+            thread::sleep(time::Duration::from_millis(((frame_length - elapsed.as_millis() as f32) as u64)));
+        }
     }
 
 
