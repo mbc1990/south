@@ -31,8 +31,11 @@ impl Ice {
         let mut zig_zags = Vec::new();
         let mut rng = rand::thread_rng();
         for i in 0..12 {
+            /*
             let zig_zag_factor = rng.gen_range(size - size/2, size);
             zig_zags.push(zig_zag_factor);
+            */
+            zig_zags.push(size);
         }
 
         // Last one should be the same as the first so the shape is closed
@@ -40,6 +43,23 @@ impl Ice {
 
         // For now, randomly give a direction and velocity
         let direction = Vector{x:rng.gen_range(-1.0, 1.0), y:rng.gen_range(-1.0, 1.0)};
+        Ice{direction, position, size, zig_zags}
+    }
+
+    pub fn new_with_direction(position: Vector, direction: Vector, size: u32) -> Ice {
+        let mut zig_zags = Vec::new();
+        let mut rng = rand::thread_rng();
+        for i in 0..12 {
+            /*
+            let zig_zag_factor = rng.gen_range(size - size/2, size);
+            zig_zags.push(zig_zag_factor);
+            */
+            zig_zags.push(size);
+        }
+
+        // Last one should be the same as the first so the shape is closed
+        zig_zags.push(*zig_zags.get(0).unwrap());
+
         Ice{direction, position, size, zig_zags}
     }
 }

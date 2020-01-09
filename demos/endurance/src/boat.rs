@@ -33,7 +33,7 @@ impl PhysicsElement for Boat {
     fn draw_offset(&self, canvas: &mut WindowCanvas, offset: &Vector) {
         canvas.set_draw_color(Color::RGB(213, 183, 143));
         let offset_center = self.position.sub(offset);
-        println!("OFfset center: {:?}", offset_center);
+        // println!("OFfset center: {:?}", offset_center);
         canvas.fill_rect(Rect::new((offset_center.x - (self.size / 2) as f32) as i32, (offset_center.y - (self.size / 2) as f32) as i32, self.size, self.size));
     }
 

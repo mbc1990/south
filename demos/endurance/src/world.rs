@@ -62,12 +62,12 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        // let berg = Ice::new(Point::new(161, 358), 73);
-        // self.ices.push(berg);
+        self.ices.push(Ice::new_with_direction(Vector{x: 400.0, y: 600.0}, Vector{x:1.0, y: 0.0}.mul(5.0), 50));
+        self.ices.push(Ice::new_with_direction(Vector{x: 1200.0, y: 600.0}, Vector{x:-1.0, y: 0.0}.mul(5.0), 50));
     }
 
 
-    // Returns all icebergs that intersect with this one
+    // Returns copies of all icebergs that intersect with this one
     // Currently assumes all bergs are circles, which will need to be fixed
     fn find_collisions<S: PhysicsElement>(&self, ice: &S) -> Vec<Box<dyn PhysicsElement>> {
         let mut collisions: Vec<Box<dyn PhysicsElement>> = Vec::new();
@@ -85,6 +85,7 @@ impl World {
     fn find_collisions_2<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
         let collisions = ices.iter()
             .filter(|other_ice| euc_distance(&other_ice.position, &ice.position) < (other_ice.size + ice.size) as f32)
+            .filter(|other_ice| &other_ice.position != &ice.position)
             .collect();
         return collisions;
     }
@@ -103,9 +104,11 @@ impl World {
             let a1 = self.boat.direction.dot(&n);
             let a2 = collision.get_direction().dot(&n);
             let optimized_p = (2.0 * (a1 - a2)) / 2.0;
-            let new_direction = self.boat.direction.sub(&n.mul(optimized_p).mul(0.25));
+            // let new_direction = self.boat.direction.sub(&n.mul(optimized_p).mul(0.25));  // TODO: magic number
+            let new_direction = self.boat.direction.sub(&n.mul(optimized_p).mul(1.0));  // TODO: magic number
             self.boat.direction = new_direction;
-            self.boat.position = self.boat.position.add(&self.boat.direction);
+            // self.boat.position = self.boat.position.add(&self.boat.direction.mul(0.85));  // TODO: magic number
+            self.boat.position = self.boat.position.add(&self.boat.direction.mul(1.0));  // TODO: magic number
         }
 
         // Update the boat position even if it's not colliding
@@ -115,8 +118,10 @@ impl World {
 
         let current_ices = self.ices.clone();
         let mut rng = rand::thread_rng();
+        println!("...");
         for mut ice in self.ices.iter_mut() {
 
+            println!("{:?}", ice);
 
             // If the ice is colliding with the boat, update it
             if euc_distance(&self.boat.position, &ice.position) < (self.boat.size + ice.size) as f32 {
@@ -131,6 +136,10 @@ impl World {
 
             // if ice is colliding with other ice, also update it
             let collisions = World::find_collisions_2(&current_ices, &ice);
+            if collisions.len() > 1 {
+                println!("Real collision!");
+            }
+            println!("Berg collisions: {:?}", collisions);
             for collision in collisions {
 
                 // Don't collide with yourself
@@ -149,7 +158,8 @@ impl World {
 
 
             // Update position
-            let dewonk_factor = rng.gen_range(0.9, 1.1);
+            // let dewonk_factor = rng.gen_range(0.9, 1.1);
+            let dewonk_factor =  1.0;
             ice.position = ice.position.add(&ice.direction.mul(dewonk_factor));
         }
 
