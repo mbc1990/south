@@ -48,7 +48,7 @@ impl World {
         let margin = 10;
         let mut rng = rand::thread_rng();
         while num_bergs > 0 {
-            let berg_size = rng.gen_range(5, 300);
+            let berg_size = rng.gen_range(100, 200);
             let x = rng.gen_range(berg_size + margin, self.size_x - (berg_size + margin));
             let y = rng.gen_range(-1 * self.size_y as i32 *4, self.size_y as i32 );
             let berg = Ice::new(Vector{x:x as f32, y:y as f32}, berg_size);
@@ -62,8 +62,9 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        self.ices.push(Ice::new_with_direction(Vector{x: 400.0, y: 600.0}, Vector{x:1.0, y: 0.0}.mul(5.0), 50));
-        self.ices.push(Ice::new_with_direction(Vector{x: 1200.0, y: 600.0}, Vector{x:-1.0, y: 0.0}.mul(5.0), 50));
+        self.ices.push(Ice::new_with_direction(Vector{x: 100.0, y: 500.0}, Vector{x:2.0, y: 0.0}.mul(100.0), 200));
+        self.ices.push(Ice::new_with_direction(Vector{x: 800.0, y: 500.0}, Vector{x:0.0, y: 0.0}.mul(1.0), 200));
+        self.ices.push(Ice::new_with_direction(Vector{x: 1500.0, y: 500.0}, Vector{x:-2.0, y: 0.0}.mul(100.0), 200));
     }
 
 
@@ -72,7 +73,7 @@ impl World {
     fn find_collisions<S: PhysicsElement>(&self, ice: &S) -> Vec<Box<dyn PhysicsElement>> {
         let mut collisions: Vec<Box<dyn PhysicsElement>> = Vec::new();
         for other_ice in self.ices.iter() {
-            if euc_distance(&other_ice.position, &ice.get_position()) < (other_ice.get_size() + ice.get_size() as u32) as f32 {
+            if &other_ice.position != &ice.get_position() && euc_distance(&other_ice.position, &ice.get_position()) < (other_ice.get_size() + ice.get_size() as u32) as f32 {
                // collisions.push(Box::new(ice.clone()));
                 collisions.push(Box::new(other_ice.clone()) as Box<dyn PhysicsElement>);
             }
@@ -108,7 +109,7 @@ impl World {
             let new_direction = self.boat.direction.sub(&n.mul(optimized_p).mul(1.0));  // TODO: magic number
             self.boat.direction = new_direction;
             // self.boat.position = self.boat.position.add(&self.boat.direction.mul(0.85));  // TODO: magic number
-            self.boat.position = self.boat.position.add(&self.boat.direction.mul(1.0));  // TODO: magic number
+            // self.boat.position = self.boat.position.add(&self.boat.direction.mul(1.0));  // TODO: magic number
         }
 
         // Update the boat position even if it's not colliding
@@ -153,7 +154,6 @@ impl World {
                 let optimized_p = (2.0 * (a1 - a2)) / 2.0;
                 let new_direction = ice.direction.sub(&n.mul(optimized_p));
                 ice.direction = new_direction;
-                ice.position = ice.position.add(&ice.direction);
             }
 
 
