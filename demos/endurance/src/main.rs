@@ -15,6 +15,7 @@ use std::{f64, thread, time};
 use std::time::{SystemTime, Instant};
 use crate::input_manager::InputManager;
 use crate::hud::Hud;
+use sdl2::Sdl;
 
 mod world;
 mod physics_element;
@@ -34,8 +35,62 @@ pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.tt
 
 fn main() -> Result<(), String> {
     println!("Welcome to the Endurance demo");
-
     let sdl_context = sdl2::init()?;
+
+    let mut canvas = construct_canvas(&sdl_context)?;
+    let mut event_pump = sdl_context.event_pump()?;
+    let mut input_manager = InputManager::new(event_pump);
+    let hud = Hud::new();
+    let mut world = World::new(WIDTH, HEIGHT);
+
+    canvas.set_draw_color(Color::RGB(6, 100, 193));
+    // clears the canvas with the color we set in `set_draw_color`.
+    canvas.clear();
+    world.init_with_random_ice(NUM_BERGS);
+    // world.init_test();
+    world.draw(&mut canvas);
+    canvas.present();
+
+    let frame_length = 1000.0 / FPS as f32;
+    'running: loop {
+        let frame_start = Instant::now();
+        let keyboard_state = input_manager.get_keyboard_state();
+        if keyboard_state.esc {
+            break 'running;
+        }
+        if keyboard_state.w {
+            world.key_w();
+        }
+        if keyboard_state.a {
+            world.key_a();
+        }
+        if keyboard_state.s {
+            world.key_s();
+        }
+        if keyboard_state.d {
+            world.key_d();
+        }
+
+        canvas.set_draw_color(Color::RGB(6, 100, 193));
+        canvas.clear();
+        world.tick();
+        world.draw(&mut canvas);
+
+        let elapsed = frame_start.elapsed();
+        // println!("tick time: {:?} fps: {:?}", elapsed, 1000.0 / elapsed.as_millis() as f64);
+        if elapsed.as_millis() < frame_length as u128 {
+            thread::sleep(time::Duration::from_millis(((frame_length - elapsed.as_millis() as f32) as u64)));
+        }
+
+        hud.draw_fps(&mut canvas, 1000.0 / frame_start.elapsed().as_millis() as f32);
+
+        canvas.present();
+    }
+
+    Ok(())
+}
+
+fn construct_canvas(sdl_context: &Sdl) -> Result<WindowCanvas, String> {
     let video_subsystem = sdl_context.video()?;
 
     // the window is the representation of a window in your operating system,
@@ -59,70 +114,5 @@ fn main() -> Result<(), String> {
         .build()
         .map_err(|e| e.to_string())?;
 
-    println!("Using SDL_Renderer \"{}\"", canvas.info().name);
-
-    canvas.set_draw_color(Color::RGB(6, 100, 193));
-
-    // clears the canvas with the color we set in `set_draw_color`.
-    canvas.clear();
-
-    // draw_ice(&mut canvas, 200, 200, 50);
-
-    // However the canvas has not been updated to the window yet, everything has been processed to
-    // an internal buffer, but if we want our buffer to be displayed on the window, we need to call
-    // `present`. We need to call this everytime we want to render a new frame on the window.
-    canvas.present();
-
-    let mut event_pump = sdl_context.event_pump()?;
-    let mut input_manager = InputManager::new(event_pump);
-    let hud = Hud::new();
-    let mut world = World::new(WIDTH, HEIGHT);
-
-    world.init_with_random_ice(NUM_BERGS);
-    // world.init_test();
-
-    world.draw(&mut canvas);
-
-    canvas.present();
-
-    let frame_length = 1000.0 / FPS as f32;
-    'running: loop {
-        let frame_start = Instant::now();
-        let keyboard_state = input_manager.get_keyboard_state();
-        if keyboard_state.esc {
-            break 'running;
-        }
-        if keyboard_state.w {
-            world.key_w();
-        }
-        if keyboard_state.a {
-            world.key_a();
-        }
-        if keyboard_state.s {
-            world.key_s();
-        }
-        if keyboard_state.d {
-            world.key_d();
-        }
-
-
-        // update the game loop here
-        canvas.set_draw_color(Color::RGB(6, 100, 193));
-        canvas.clear();
-        world.tick();
-        world.draw(&mut canvas);
-
-        let elapsed = frame_start.elapsed();
-        // println!("tick time: {:?} fps: {:?}", elapsed, 1000.0 / elapsed.as_millis() as f64);
-        if elapsed.as_millis() < frame_length as u128 {
-            thread::sleep(time::Duration::from_millis(((frame_length - elapsed.as_millis() as f32) as u64)));
-        }
-
-        hud.draw_fps(&mut canvas, 1000.0 / frame_start.elapsed().as_millis() as f32);
-
-        canvas.present();
-    }
-
-
-    Ok(())
+    return Ok(canvas);
 }
