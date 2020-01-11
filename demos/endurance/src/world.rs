@@ -48,11 +48,16 @@ impl World {
         let margin = 10;
         let mut rng = rand::thread_rng();
         while num_bergs > 0 {
-            let berg_size = rng.gen_range(100, 200);
+            let berg_size = rng.gen_range(5, 200);
             let x = rng.gen_range(berg_size + margin, self.size_x - (berg_size + margin));
             let y = rng.gen_range(-1 * self.size_y as i32 *4, self.size_y as i32 );
             let berg = Ice::new(Vector{x:x as f32, y:y as f32}, berg_size);
             let collisions = self.find_collisions(&berg);
+
+            if euc_distance(&self.boat.position, &berg.position) < (self.boat.size + *&berg.size) as f32 {
+               continue;
+            }
+
             if collisions.len() == 0 {
                 self.ices.push(berg);
                 num_bergs -= 1;
@@ -62,9 +67,9 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        self.ices.push(Ice::new_with_direction(Vector{x: 100.0, y: 500.0}, Vector{x:2.0, y: 0.0}.mul(100.0), 200));
-        self.ices.push(Ice::new_with_direction(Vector{x: 800.0, y: 500.0}, Vector{x:0.0, y: 0.0}.mul(1.0), 200));
-        self.ices.push(Ice::new_with_direction(Vector{x: 1500.0, y: 500.0}, Vector{x:-2.0, y: 0.0}.mul(100.0), 200));
+        self.ices.push(Ice::new_with_direction(Vector{x: 100.0, y: 500.0}, Vector{x:2.0, y: 0.0}.mul(0.0), 200));
+        self.ices.push(Ice::new_with_direction(Vector{x: 800.0, y: 500.0}, Vector{x:0.0, y: 0.0}.mul(0.0), 200));
+        self.ices.push(Ice::new_with_direction(Vector{x: 1500.0, y: 500.0}, Vector{x:-2.0, y: 0.0}.mul(0.0), 200));
     }
 
 
@@ -97,10 +102,14 @@ impl World {
         // Find all collisions for each iceberg, updating velocities
 
 
+        let boat_pos_start_tick = self.boat.position.clone();
+        let boat_dir_start_tick = self.boat.direction.clone();
+
         // Boat collisions
         let boat_collisions = self.find_collisions(&self.boat);
 
         for collision in boat_collisions {
+            println!("Boat collision");
             let n = self.boat.position.sub(&collision.get_position()).norm();
             let a1 = self.boat.direction.dot(&n);
             let a2 = collision.get_direction().dot(&n);
@@ -122,25 +131,27 @@ impl World {
         println!("...");
         for mut ice in self.ices.iter_mut() {
 
-            println!("{:?}", ice);
+            // println!("{:?}", ice);
 
             // If the ice is colliding with the boat, update it
-            if euc_distance(&self.boat.position, &ice.position) < (self.boat.size + ice.size) as f32 {
-                let n = ice.position.sub(&self.boat.position).norm();
+            if euc_distance(&boat_pos_start_tick, &ice.position) < (self.boat.size + ice.size) as f32 {
+                let n = ice.position.sub(&boat_pos_start_tick).norm();
                 let a1 = ice.direction.dot(&n);
-                let a2 = self.boat.direction.dot(&n);
+                let a2 = boat_dir_start_tick.dot(&n);
                 let optimized_p = (2.0 * (a1 - a2)) / 2.0;
                 let new_direction = ice.direction.sub(&n.mul(optimized_p));
                 ice.direction = new_direction;
-                ice.position = ice.position.add(&ice.direction);
+                // ice.position = ice.position.add(&ice.direction);
             }
 
             // if ice is colliding with other ice, also update it
             let collisions = World::find_collisions_2(&current_ices, &ice);
+            /*
             if collisions.len() > 1 {
                 println!("Real collision!");
             }
-            println!("Berg collisions: {:?}", collisions);
+            */
+            // println!("Berg collisions: {:?}", collisions);
             for collision in collisions {
 
                 // Don't collide with yourself

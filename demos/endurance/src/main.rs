@@ -20,7 +20,7 @@ mod vector;
 
 pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
-pub const FPS: u32 = 30;
+pub const FPS: u32 = 60;
 pub const BOAT_SIZE: u32 = 25;
 pub const NUM_BERGS: i32 = 2500;
 
@@ -73,8 +73,8 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let mut world = World::new(WIDTH, HEIGHT);
-    // world.init_with_random_ice(NUM_BERGS);
-    world.init_test();
+    world.init_with_random_ice(NUM_BERGS);
+    // world.init_test();
     world.draw(&mut canvas);
     canvas.present();
 
