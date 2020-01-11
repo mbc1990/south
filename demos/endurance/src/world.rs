@@ -5,6 +5,7 @@ use crate::vector::{Vector};
 use sdl2::render::{WindowCanvas};
 use rand::Rng;
 use crate::BOAT_SIZE;
+use crate::keyboard_state::KeyboardState;
 
 pub struct World {
     size_x: u32,
@@ -94,8 +95,25 @@ impl World {
         return collisions;
     }
 
+    fn respond_to_input(&mut self, keyboard_state: &KeyboardState) {
+        if keyboard_state.w {
+            self.key_w();
+        }
+        if keyboard_state.a {
+            self.key_a();
+        }
+        if keyboard_state.s {
+            self.key_s();
+        }
+        if keyboard_state.d {
+            self.key_d();
+        }
+    }
+
     // Called from event loop
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self, keyboard_state: &KeyboardState) {
+
+        self.respond_to_input(keyboard_state);
 
         let boat_pos_start_tick = self.boat.position.clone();
         let boat_dir_start_tick = self.boat.direction.clone();

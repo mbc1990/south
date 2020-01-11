@@ -36,7 +36,7 @@ fn main() -> Result<(), String> {
     let mut world = World::new(WIDTH, HEIGHT);
 
     canvas.set_draw_color(Color::RGB(6, 100, 193));
-    // clears the canvas with the color we set in `set_draw_color`.
+    // clears the canvas with the currently set color
     canvas.clear();
     world.init_with_random_ice(NUM_BERGS);
     // world.init_test();
@@ -46,36 +46,23 @@ fn main() -> Result<(), String> {
     let frame_length = 1000.0 / FPS as f32;
     'running: loop {
         let frame_start = Instant::now();
+
         let keyboard_state = input_manager.get_keyboard_state();
         if keyboard_state.esc {
             break 'running;
         }
-        if keyboard_state.w {
-            world.key_w();
-        }
-        if keyboard_state.a {
-            world.key_a();
-        }
-        if keyboard_state.s {
-            world.key_s();
-        }
-        if keyboard_state.d {
-            world.key_d();
-        }
 
         canvas.set_draw_color(Color::RGB(6, 100, 193));
         canvas.clear();
-        world.tick();
+        world.tick(&keyboard_state);
         world.draw(&mut canvas);
 
         let elapsed = frame_start.elapsed();
-        // println!("tick time: {:?} fps: {:?}", elapsed, 1000.0 / elapsed.as_millis() as f64);
         if elapsed.as_millis() < frame_length as u128 {
             thread::sleep(time::Duration::from_millis((frame_length - elapsed.as_millis() as f32) as u64));
         }
 
         hud.draw_fps(&mut canvas, 1000.0 / frame_start.elapsed().as_millis() as f32);
-
         canvas.present();
     }
 
