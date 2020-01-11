@@ -1,12 +1,14 @@
 extern crate rand;
 
+use std::env;
+use std::path::Path;
 use sdl2::rect::{Point, Rect};
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::mouse::MouseButton;
 use sdl2::keyboard::Keycode;
 use sdl2::video::{Window, WindowContext};
-use sdl2::render::{Canvas, Texture, TextureCreator, WindowCanvas};
+use sdl2::render::{Canvas, Texture, TextureCreator, WindowCanvas, TextureQuery};
 use rand::Rng;
 use world::World;
 use std::{f64, thread, time};
@@ -23,9 +25,9 @@ mod input_manager;
 
 pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
-pub const FPS: u32 = 60;
+pub const FPS: u32 = 30;
 pub const BOAT_SIZE: u32 = 25;
-pub const NUM_BERGS: i32 = 2500;
+pub const NUM_BERGS: i32 = 100;
 
 fn main() -> Result<(), String> {
     println!("Welcome to the Endurance demo");
@@ -56,6 +58,7 @@ fn main() -> Result<(), String> {
 
     println!("Using SDL_Renderer \"{}\"", canvas.info().name);
     canvas.set_draw_color(Color::RGB(6, 100, 193));
+
     // clears the canvas with the color we set in `set_draw_color`.
     canvas.clear();
 
@@ -74,6 +77,7 @@ fn main() -> Result<(), String> {
     // world.init_test();
 
     world.draw(&mut canvas);
+
     canvas.present();
 
     let frame_length = 1000.0 / FPS as f32;
@@ -103,17 +107,34 @@ fn main() -> Result<(), String> {
         world.tick();
         world.draw(&mut canvas);
 
-        // TODO: Print fps
-
-        canvas.present();
-
         let elapsed = frame_start.elapsed();
         // println!("tick time: {:?} fps: {:?}", elapsed, 1000.0 / elapsed.as_millis() as f64);
         if elapsed.as_millis() < frame_length as u128 {
             thread::sleep(time::Duration::from_millis(((frame_length - elapsed.as_millis() as f32) as u64)));
         }
+        draw_fps(&mut canvas, 1000.0 / frame_start.elapsed().as_millis() as f32);
+        canvas.present();
     }
 
 
     Ok(())
+}
+
+fn draw_fps(canvas: &mut WindowCanvas, fps: f32) {
+    let to_draw = format!("FPS: {}", fps as u32);
+    let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string()).unwrap();
+    let texture_creator = canvas.texture_creator();
+    let font_path = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";
+    let mut font = ttf_context.load_font(font_path, 60).unwrap();
+    font.set_style(sdl2::ttf::FontStyle::BOLD);
+    let surface = font.render(&to_draw)
+        .blended(Color::RGBA(0, 0, 0, 255)).map_err(|e| e.to_string()).unwrap();
+    let texture = texture_creator.create_texture_from_surface(&surface)
+        .map_err(|e| e.to_string()).unwrap();
+
+    let TextureQuery { width, height, .. } = texture.query();
+
+    let target = Rect::new(15, 0, width, height);
+
+    canvas.copy(&texture, None, Some(target)).unwrap();
 }
