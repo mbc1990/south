@@ -2,7 +2,6 @@ use sdl2::EventPump;
 use crate::keyboard_state::KeyboardState;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::mouse::MouseButton;
 
 pub struct InputManager {
     event_pump: EventPump,
@@ -65,8 +64,10 @@ impl InputManager {
                     println!("Key down esc");
                     self.keyboard_state.esc = false;
                 },
+                /*
                 Event::MouseButtonDown { x, y, mouse_btn: MouseButton::Left, .. } => {
                 },
+                */
                 _ => {}
             }
         }

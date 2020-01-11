@@ -1,5 +1,5 @@
 use sdl2::rect::Point;
-use sdl2::render::{Canvas, WindowCanvas};
+use sdl2::render::{WindowCanvas};
 use rand::Rng;
 use sdl2::pixels::Color;
 use crate::vector::{Vector};
@@ -26,29 +26,10 @@ pub struct Ice {
 
 impl Ice {
 
-    // Create an empty ice
-    pub fn new(position: Vector, size: u32) -> Ice {
+    pub fn new(position: Vector, direction: Vector, size: u32) -> Ice {
         let mut zig_zags = Vec::new();
-        let mut rng = rand::thread_rng();
-        for i in 0..12{
-            let zig_zag_factor = rng.gen_range(size - size/2, size);
-            zig_zags.push(zig_zag_factor);
-            // zig_zags.push(size);
-        }
-
-        // Last one should be the same as the first so the shape is closed
-        zig_zags.push(*zig_zags.get(0).unwrap());
-
-        // For now, randomly give a direction and velocity
-        // let direction = Vector{x:rng.gen_range(-1.0, 1.0), y:rng.gen_range(-1.0, 1.0)};
-        let direction = Vector{x: 0.0, y: 0.0};
-        Ice{direction, position, size, zig_zags}
-    }
-
-    pub fn new_with_direction(position: Vector, direction: Vector, size: u32) -> Ice {
-        let mut zig_zags = Vec::new();
-        let mut rng = rand::thread_rng();
-        for i in 0..12 {
+        // let rng = rand::thread_rng();
+        for _ in 0..12 {
             /*
             let zig_zag_factor = rng.gen_range(size - size/2, size);
             zig_zags.push(zig_zag_factor);
@@ -70,8 +51,6 @@ impl PhysicsElement for Ice {
 
         // Rotate a point around the circle representing the iceberg, changing the radius of the point to create jagged edges
         let point_x = self.position.x;
-        let point_y = self.position.y + self.size as f32;
-        let mut rng = rand::thread_rng();
         let mut points = Vec::new();
         for i in 0..13 {
             let angle = i * 30;
@@ -87,11 +66,11 @@ impl PhysicsElement for Ice {
         for i in 0..points.len() - 1 {
             let p1 = points.get(i).unwrap();
             let p2 = points.get(i+1).unwrap();
-            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y));
+            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
         }
     }
 
-    fn draw_offset_circ(&self, canvas: &mut WindowCanvas, offset: &Vector) {}
+    fn draw_offset_circ(&self, _canvas: &mut WindowCanvas, _offset: &Vector) {}
 
     fn draw_offset(&self, canvas: &mut WindowCanvas, offset: &Vector) {
         canvas.set_draw_color(Color::RGB(228, 240, 253));
@@ -101,8 +80,6 @@ impl PhysicsElement for Ice {
         let offset_position = self.position.sub(offset);
 
         let point_x = offset_position.x;
-        let point_y = offset_position.y + self.size as f32;
-        let mut rng = rand::thread_rng();
         let mut points = Vec::new();
         for i in 0..13 {
             let angle = i * 30;
@@ -118,7 +95,7 @@ impl PhysicsElement for Ice {
         for i in 0..points.len() - 1 {
             let p1 = points.get(i).unwrap();
             let p2 = points.get(i+1).unwrap();
-            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y));
+            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
         }
     }
 

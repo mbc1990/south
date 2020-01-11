@@ -1,4 +1,4 @@
-use sdl2::render::{Canvas, WindowCanvas};
+use sdl2::render::{WindowCanvas};
 use crate::vector::Vector;
 
 // Anything that's part of the physics/collision world

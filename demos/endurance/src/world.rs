@@ -2,10 +2,8 @@ use crate::ice::{Ice};
 use crate::boat::{Boat};
 use crate::physics_element::PhysicsElement;
 use crate::vector::{Vector};
-use sdl2::render::{Canvas, WindowCanvas};
-use sdl2::rect::Point;
+use sdl2::render::{WindowCanvas};
 use rand::Rng;
-use std::mem;
 use crate::BOAT_SIZE;
 
 pub struct World {
@@ -51,7 +49,7 @@ impl World {
             let berg_size = rng.gen_range(5, 200);
             let x = rng.gen_range(berg_size + margin, self.size_x - (berg_size + margin));
             let y = rng.gen_range(-1 * self.size_y as i32 *4, self.size_y as i32 );
-            let berg = Ice::new(Vector{x:x as f32, y:y as f32}, berg_size);
+            let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:0.0, y:0.0}, berg_size);
             let collisions = self.find_collisions(&berg);
 
             if euc_distance(&self.boat.position, &berg.position) < (self.boat.size + *&berg.size) as f32 {
@@ -67,9 +65,9 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        self.ices.push(Ice::new_with_direction(Vector{x: 100.0, y: 500.0}, Vector{x:2.0, y: 0.0}.mul(0.0), 200));
-        self.ices.push(Ice::new_with_direction(Vector{x: 800.0, y: 500.0}, Vector{x:0.0, y: 0.0}.mul(0.0), 200));
-        self.ices.push(Ice::new_with_direction(Vector{x: 1500.0, y: 500.0}, Vector{x:-2.0, y: 0.0}.mul(0.0), 200));
+        self.ices.push(Ice::new(Vector{x: 100.0, y: 500.0}, Vector{x:2.0, y: 0.0}.mul(0.0), 200));
+        self.ices.push(Ice::new(Vector{x: 800.0, y: 500.0}, Vector{x:0.0, y: 0.0}.mul(0.0), 200));
+        self.ices.push(Ice::new(Vector{x: 1500.0, y: 500.0}, Vector{x:-2.0, y: 0.0}.mul(0.0), 200));
     }
 
 
@@ -118,7 +116,6 @@ impl World {
         self.boat.position = self.boat.position.add(&self.boat.direction);
 
         let current_ices = self.ices.clone();
-        let mut rng = rand::thread_rng();
         for mut ice in self.ices.iter_mut() {
 
             // If the ice is colliding with the boat, update it

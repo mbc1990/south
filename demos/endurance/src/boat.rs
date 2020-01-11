@@ -1,6 +1,5 @@
 use sdl2::rect::{Point, Rect};
-use sdl2::render::{Canvas, WindowCanvas};
-use rand::Rng;
+use sdl2::render::{WindowCanvas};
 use sdl2::pixels::Color;
 use crate::vector::{Vector};
 use crate::physics_element::{PhysicsElement};
@@ -27,14 +26,14 @@ impl Boat {
 impl PhysicsElement for Boat {
     fn draw(&self, canvas: &mut WindowCanvas) {
         canvas.set_draw_color(Color::RGB(213, 183, 143));
-        canvas.fill_rect(Rect::new((self.position.x - (self.size / 2) as f32) as i32, (self.position.y - (self.size / 2) as f32) as i32, self.size, self.size));
+        canvas.fill_rect(Rect::new((self.position.x - (self.size / 2) as f32) as i32, (self.position.y - (self.size / 2) as f32) as i32, self.size, self.size)).unwrap();
     }
 
     fn draw_offset(&self, canvas: &mut WindowCanvas, offset: &Vector) {
         canvas.set_draw_color(Color::RGB(213, 183, 143));
         let offset_center = self.position.sub(offset);
         // println!("OFfset center: {:?}", offset_center);
-        canvas.fill_rect(Rect::new((offset_center.x - (self.size / 2) as f32) as i32, (offset_center.y - (self.size / 2) as f32) as i32, self.size, self.size));
+        canvas.fill_rect(Rect::new((offset_center.x - (self.size / 2) as f32) as i32, (offset_center.y - (self.size / 2) as f32) as i32, self.size, self.size)).unwrap();
     }
 
     fn draw_offset_circ(&self, canvas: &mut WindowCanvas, offset: &Vector) {
@@ -42,8 +41,6 @@ impl PhysicsElement for Boat {
 
         let offset_position = self.position.sub(offset);
         let point_x = offset_position.x;
-        let point_y = offset_position.y + self.size as f32;
-        let mut rng = rand::thread_rng();
         let mut points = Vec::new();
         for i in 0..13 {
             let angle = i * 30;
@@ -59,8 +56,10 @@ impl PhysicsElement for Boat {
         for i in 0..points.len() - 1 {
             let p1 = points.get(i).unwrap();
             let p2 = points.get(i+1).unwrap();
-            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y));
-            canvas.draw_line(Point::new(offset_position.x as i32, offset_position.y as i32), Point::new(p1.x, p1.y));
+
+            // TODO: Handle err case
+            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
+            canvas.draw_line(Point::new(offset_position.x as i32, offset_position.y as i32), Point::new(p1.x, p1.y)).unwrap();
         }
     }
 

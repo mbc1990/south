@@ -1,18 +1,10 @@
 extern crate rand;
 
-use std::env;
-use std::path::Path;
-use sdl2::rect::{Point, Rect};
 use sdl2::pixels::Color;
-use sdl2::event::Event;
-use sdl2::mouse::MouseButton;
-use sdl2::keyboard::Keycode;
-use sdl2::video::{Window, WindowContext};
-use sdl2::render::{Canvas, Texture, TextureCreator, WindowCanvas, TextureQuery};
-use rand::Rng;
+use sdl2::render::{WindowCanvas};
 use world::World;
-use std::{f64, thread, time};
-use std::time::{SystemTime, Instant};
+use std::{thread, time};
+use std::time::{Instant};
 use crate::input_manager::InputManager;
 use crate::hud::Hud;
 use sdl2::Sdl;
@@ -38,7 +30,7 @@ fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
 
     let mut canvas = construct_canvas(&sdl_context)?;
-    let mut event_pump = sdl_context.event_pump()?;
+    let event_pump = sdl_context.event_pump()?;
     let mut input_manager = InputManager::new(event_pump);
     let hud = Hud::new();
     let mut world = World::new(WIDTH, HEIGHT);
@@ -79,7 +71,7 @@ fn main() -> Result<(), String> {
         let elapsed = frame_start.elapsed();
         // println!("tick time: {:?} fps: {:?}", elapsed, 1000.0 / elapsed.as_millis() as f64);
         if elapsed.as_millis() < frame_length as u128 {
-            thread::sleep(time::Duration::from_millis(((frame_length - elapsed.as_millis() as f32) as u64)));
+            thread::sleep(time::Duration::from_millis((frame_length - elapsed.as_millis() as f32) as u64));
         }
 
         hud.draw_fps(&mut canvas, 1000.0 / frame_start.elapsed().as_millis() as f32);
@@ -107,7 +99,7 @@ fn construct_canvas(sdl_context: &Sdl) -> Result<WindowCanvas, String> {
 
     // the canvas allows us to both manipulate the property of the window and to change its content
     // via hardware or software rendering. See CanvasBuilder for more info.
-    let mut canvas = window.into_canvas()
+    let canvas = window.into_canvas()
         .target_texture()
         .present_vsync()
         .accelerated()
