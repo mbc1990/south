@@ -14,6 +14,7 @@ use world::World;
 use std::{f64, thread, time};
 use std::time::{SystemTime, Instant};
 use crate::input_manager::InputManager;
+use crate::hud::Hud;
 
 mod world;
 mod physics_element;
@@ -22,12 +23,14 @@ mod boat;
 mod vector;
 mod keyboard_state;
 mod input_manager;
+mod hud;
 
 pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
-pub const FPS: u32 = 30;
-pub const BOAT_SIZE: u32 = 25;
-pub const NUM_BERGS: i32 = 100;
+pub const FPS: u32 = 60;
+pub const BOAT_SIZE: u32 = 50;
+pub const NUM_BERGS: i32 = 3000;
+pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";
 
 fn main() -> Result<(), String> {
     println!("Welcome to the Endurance demo");
@@ -57,6 +60,7 @@ fn main() -> Result<(), String> {
         .map_err(|e| e.to_string())?;
 
     println!("Using SDL_Renderer \"{}\"", canvas.info().name);
+
     canvas.set_draw_color(Color::RGB(6, 100, 193));
 
     // clears the canvas with the color we set in `set_draw_color`.
@@ -71,6 +75,7 @@ fn main() -> Result<(), String> {
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut input_manager = InputManager::new(event_pump);
+    let hud = Hud::new();
     let mut world = World::new(WIDTH, HEIGHT);
 
     world.init_with_random_ice(NUM_BERGS);
@@ -112,7 +117,9 @@ fn main() -> Result<(), String> {
         if elapsed.as_millis() < frame_length as u128 {
             thread::sleep(time::Duration::from_millis(((frame_length - elapsed.as_millis() as f32) as u64)));
         }
-        draw_fps(&mut canvas, 1000.0 / frame_start.elapsed().as_millis() as f32);
+
+        hud.draw_fps(&mut canvas, 1000.0 / frame_start.elapsed().as_millis() as f32);
+
         canvas.present();
     }
 
@@ -122,6 +129,7 @@ fn main() -> Result<(), String> {
 
 fn draw_fps(canvas: &mut WindowCanvas, fps: f32) {
     let to_draw = format!("FPS: {}", fps as u32);
+    // println!("{}", to_draw);
     let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string()).unwrap();
     let texture_creator = canvas.texture_creator();
     let font_path = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";

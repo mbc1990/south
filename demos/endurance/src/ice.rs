@@ -32,8 +32,8 @@ impl Ice {
         let mut rng = rand::thread_rng();
         for i in 0..12{
             let zig_zag_factor = rng.gen_range(size - size/2, size);
-            // zig_zags.push(zig_zag_factor);
-            zig_zags.push(size);
+            zig_zags.push(zig_zag_factor);
+            // zig_zags.push(size);
         }
 
         // Last one should be the same as the first so the shape is closed
