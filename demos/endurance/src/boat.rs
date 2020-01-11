@@ -60,6 +60,7 @@ impl PhysicsElement for Boat {
             let p1 = points.get(i).unwrap();
             let p2 = points.get(i+1).unwrap();
             canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y));
+            canvas.draw_line(Point::new(offset_position.x as i32, offset_position.y as i32), Point::new(p1.x, p1.y));
         }
     }
 
