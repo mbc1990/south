@@ -169,9 +169,11 @@ impl World {
 
 
             // Update position
-            // let dewonk_factor = rng.gen_range(0.9, 1.1);
-            let dewonk_factor =  1.0;
-            ice.position = ice.position.add(&ice.direction.mul(dewonk_factor));
+            // let dewonk_factor = rng.gen_range(0.5, 1.1);
+            // let dewonk_factor =  1.0;
+
+            ice.direction = ice.direction.mul(0.9);
+            ice.position = ice.position.add(&ice.direction);
         }
 
     }
@@ -181,6 +183,6 @@ impl World {
         for berg in &self.ices {
            berg.draw_offset(canvas, &offset);
         }
-        self.boat.draw_offset(canvas, &offset);
+        self.boat.draw_offset_circ(canvas, &offset);
     }
 }

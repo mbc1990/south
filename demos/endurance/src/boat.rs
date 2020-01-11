@@ -37,6 +37,33 @@ impl PhysicsElement for Boat {
         canvas.fill_rect(Rect::new((offset_center.x - (self.size / 2) as f32) as i32, (offset_center.y - (self.size / 2) as f32) as i32, self.size, self.size));
     }
 
+    fn draw_offset_circ(&self, canvas: &mut WindowCanvas, offset: &Vector) {
+        canvas.set_draw_color(Color::RGB(213, 183, 143));
+
+        let offset_position = self.position.sub(offset);
+        let point_x = offset_position.x;
+        let point_y = offset_position.y + self.size as f32;
+        let mut rng = rand::thread_rng();
+        let mut points = Vec::new();
+        for i in 0..13 {
+            let angle = i * 30;
+            let zig_zag_factor = &self.size;
+            let zig_zagged_point_y = offset_position.y + *zig_zag_factor as f32;
+            let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
+            let r_x = angle_rad.cos() * (point_x as f64 - offset_position.x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- offset_position.y as f64) + offset_position.x as f64;
+            let r_y = angle_rad.sin() * (point_x as f64 - offset_position.x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- offset_position.y as f64) + offset_position.y as f64;
+            points.push(Point::new(r_x as i32, r_y as i32));
+        }
+
+        // Connect the points of the iceberg polygon with lines
+        for i in 0..points.len() - 1 {
+            let p1 = points.get(i).unwrap();
+            let p2 = points.get(i+1).unwrap();
+            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y));
+        }
+    }
+
+
     fn get_size(&self) -> u32 {
         return self.size;
     }
