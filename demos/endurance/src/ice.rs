@@ -47,27 +47,7 @@ impl PhysicsElement for Ice {
 
     // Draw the ice to the canvas
     fn draw(&self, canvas: &mut WindowCanvas) {
-        canvas.set_draw_color(Color::RGB(228, 240, 253));
-
-        // Rotate a point around the circle representing the iceberg, changing the radius of the point to create jagged edges
-        let point_x = self.position.x;
-        let mut points = Vec::new();
-        for i in 0..13 {
-            let angle = i * 30;
-            let zig_zag_factor = self.zig_zags.get(i).unwrap();
-            let zig_zagged_point_y = self.position.y + *zig_zag_factor as f32;
-            let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
-            let r_x = angle_rad.cos() * (point_x as f64 - self.position.x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- self.position.y as f64) + self.position.x as f64;
-            let r_y = angle_rad.sin() * (point_x as f64 - self.position.x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- self.position.y as f64) + self.position.y as f64;
-            points.push(Point::new(r_x as i32, r_y as i32));
-        }
-
-        // Connect the points of the iceberg polygon with lines
-        for i in 0..points.len() - 1 {
-            let p1 = points.get(i).unwrap();
-            let p2 = points.get(i+1).unwrap();
-            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
-        }
+        self.draw_offset(canvas, &Vector{x:0.0, y:0.0});
     }
 
     fn draw_offset_circ(&self, _canvas: &mut WindowCanvas, _offset: &Vector) {}
@@ -76,9 +56,7 @@ impl PhysicsElement for Ice {
         canvas.set_draw_color(Color::RGB(228, 240, 253));
 
         // Rotate a point around the circle representing the iceberg, changing the radius of the point to create jagged edges
-
         let offset_position = self.position.sub(offset);
-
         let point_x = offset_position.x;
         let mut points = Vec::new();
         for i in 0..13 {

@@ -23,6 +23,7 @@ pub const HEIGHT: u32 = 800*2;
 pub const FPS: u32 = 60;
 pub const BOAT_SIZE: u32 = 50;
 pub const NUM_BERGS: i32 = 3000;
+pub const ICE_COLLISION_DECEL_FACTOR: f32 = 0.95;
 pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";
 
 fn main() -> Result<(), String> {

@@ -4,7 +4,7 @@ use crate::physics_element::PhysicsElement;
 use crate::vector::{Vector};
 use sdl2::render::{WindowCanvas};
 use rand::Rng;
-use crate::BOAT_SIZE;
+use crate::{BOAT_SIZE, ICE_COLLISION_DECEL_FACTOR};
 use crate::keyboard_state::KeyboardState;
 
 pub struct World {
@@ -16,6 +16,15 @@ pub struct World {
 
 fn euc_distance(p1: &Vector, p2: &Vector) -> f32 {
     (((p1.x - p2.x).powf(2.0) + (p1.y - p2.y).powf(2.0)) as f32).sqrt()
+}
+
+fn reflect(subject_pos: Vector, subject_dir: Vector, object_pos: Vector, object_dir: Vector ) -> Vector {
+    let n = subject_pos.sub(&object_pos).norm();
+    let a1 = subject_dir.dot(&n);
+    let a2 = object_dir.dot(&n);
+    let optimized_p = (2.0 * (a1 - a2)) / 2.0;
+    let new_direction = subject_dir.sub(&n.mul(optimized_p).mul(1.0));  // TODO: magic number
+    return new_direction;
 }
 
 impl World {
@@ -120,14 +129,8 @@ impl World {
 
         // Boat collisions
         let boat_collisions = self.find_collisions(&self.boat);
-
         for collision in boat_collisions {
-            let n = self.boat.position.sub(&collision.get_position()).norm();
-            let a1 = self.boat.direction.dot(&n);
-            let a2 = collision.get_direction().dot(&n);
-            let optimized_p = (2.0 * (a1 - a2)) / 2.0;
-            let new_direction = self.boat.direction.sub(&n.mul(optimized_p).mul(1.0));  // TODO: magic number
-            self.boat.direction = new_direction;
+            self.boat.direction = reflect(self.boat.position, self.boat.direction, collision.get_position(), collision.get_direction());
         }
 
         // Update the boat position even if it's not colliding
@@ -138,12 +141,7 @@ impl World {
 
             // If the ice is colliding with the boat, update it
             if euc_distance(&boat_pos_start_tick, &ice.position) < (self.boat.size + ice.size) as f32 {
-                let n = ice.position.sub(&boat_pos_start_tick).norm();
-                let a1 = ice.direction.dot(&n);
-                let a2 = boat_dir_start_tick.dot(&n);
-                let optimized_p = (2.0 * (a1 - a2)) / 2.0;
-                let new_direction = ice.direction.sub(&n.mul(optimized_p));
-                ice.direction = new_direction;
+                ice.direction = reflect(ice.position, ice.direction, boat_pos_start_tick, boat_dir_start_tick);
             }
 
             // if ice is colliding with other ice, also update it
@@ -155,18 +153,11 @@ impl World {
                     continue;
                 }
 
-                let n = ice.position.sub(&collision.position).norm();
-                let a1 = ice.direction.dot(&n);
-                let a2 = collision.direction.dot(&n);
-                let optimized_p = (2.0 * (a1 - a2)) / 2.0;
-                let new_direction = ice.direction.sub(&n.mul(optimized_p));
-                ice.direction = new_direction;
+                ice.direction = reflect(ice.position, ice.direction, collision.position, collision.direction);
             }
 
-
             // Collisions reduce velocity overall
-            ice.direction = ice.direction.mul(0.95);  // TODO: Magic number
-
+            ice.direction = ice.direction.mul(ICE_COLLISION_DECEL_FACTOR);
             ice.position = ice.position.add(&ice.direction);
         }
 
