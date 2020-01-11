@@ -172,8 +172,16 @@ impl World {
             // let dewonk_factor = rng.gen_range(0.5, 1.1);
             // let dewonk_factor =  1.0;
 
-            ice.direction = ice.direction.mul(0.9);
+            ice.direction = ice.direction.mul(0.95);
             ice.position = ice.position.add(&ice.direction);
+        }
+
+
+        // Hack - push all bergs still colliding with the boat away
+        for mut ice in self.ices.iter_mut() {
+            while euc_distance(&boat_pos_start_tick, &ice.position) < (self.boat.size + ice.size) as f32 {
+                ice.position = ice.position.add(&boat_dir_start_tick);
+            }
         }
 
     }
