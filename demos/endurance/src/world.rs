@@ -4,7 +4,7 @@ use crate::physics_element::PhysicsElement;
 use crate::vector::{Vector};
 use sdl2::render::{WindowCanvas};
 use rand::Rng;
-use crate::{BOAT_SIZE, ICE_COLLISION_DECEL_FACTOR};
+use crate::{BOAT_SIZE, ICE_COLLISION_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE};
 use crate::keyboard_state::KeyboardState;
 
 pub struct World {
@@ -56,7 +56,7 @@ impl World {
         let margin = 10;
         let mut rng = rand::thread_rng();
         while num_bergs > 0 {
-            let berg_size = rng.gen_range(5, 200);
+            let berg_size = rng.gen_range(BERG_MIN_SIZE, BERG_MAX_SIZE);
             let x = rng.gen_range(berg_size + margin, self.size_x - (berg_size + margin));
             let y = rng.gen_range(-1 * self.size_y as i32 *4, self.size_y as i32 );
             let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:0.0, y:0.0}, berg_size);
@@ -144,7 +144,6 @@ impl World {
                 ice.direction = reflect(ice.position, ice.direction, boat_pos_start_tick, boat_dir_start_tick);
             }
 
-            // if ice is colliding with other ice, also update it
             let collisions = World::find_collisions_2(&current_ices, &ice);
             for collision in collisions {
 
@@ -157,6 +156,7 @@ impl World {
             }
 
             // Collisions reduce velocity overall
+            // TODO: Rename, this happens regardles of collision
             ice.direction = ice.direction.mul(ICE_COLLISION_DECEL_FACTOR);
             ice.position = ice.position.add(&ice.direction);
         }

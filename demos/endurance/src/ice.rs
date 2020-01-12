@@ -17,6 +17,7 @@ pub struct Ice {
     // pub position: Point,
     pub position: Vector,
 
+
     // Maximum radius of circle underlying iceberg
     pub size: u32,
 
@@ -28,12 +29,10 @@ impl Ice {
 
     pub fn new(position: Vector, direction: Vector, size: u32) -> Ice {
         let mut zig_zags = Vec::new();
-        // let rng = rand::thread_rng();
+        let mut rng = rand::thread_rng();
         for _ in 0..12 {
-            /*
-            let zig_zag_factor = rng.gen_range(size - size/2, size);
-            zig_zags.push(zig_zag_factor);
-            */
+            // let zig_zag_factor = rng.gen_range(size - size/2, size);
+            // zig_zags.push(zig_zag_factor);
             zig_zags.push(size);
         }
 
