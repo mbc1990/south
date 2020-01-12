@@ -4,7 +4,7 @@ use crate::physics_element::PhysicsElement;
 use crate::vector::{Vector};
 use sdl2::render::{WindowCanvas};
 use rand::Rng;
-use crate::{BOAT_SIZE, ICE_COLLISION_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE, GRID_SIZE, WIDTH, HEIGHT};
+use crate::{BOAT_SIZE, ICE_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE, GRID_SIZE, WIDTH, HEIGHT};
 use crate::keyboard_state::KeyboardState;
 use std::collections::HashMap;
 
@@ -176,7 +176,7 @@ impl World {
 
             // Collisions reduce velocity overall
             // TODO: Rename, this happens regardles of collision
-            ice.direction = ice.direction.mul(ICE_COLLISION_DECEL_FACTOR);
+            ice.direction = ice.direction.mul(ICE_DECEL_FACTOR);
             ice.position = ice.position.add(&ice.direction);
         }
 
