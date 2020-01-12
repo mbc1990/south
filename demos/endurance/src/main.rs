@@ -20,14 +20,17 @@ mod hud;
 
 pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
-pub const FPS: u32 = 60;
+pub const FPS: u32 = 30;
 pub const BOAT_SIZE: u32 = 50;
 pub const NUM_BERGS: i32 = 3500;
 pub const BERG_MIN_SIZE: u32 = 5;
 pub const BERG_MAX_SIZE: u32 = 200;
 pub const ICE_COLLISION_DECEL_FACTOR: f32 = 0.95;
 pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";
-pub const GRID_SIZE: u32 = BERG_MAX_SIZE + 5;
+
+// TODO: This can be optimized but affects gameplay behavior
+// pub const GRID_SIZE: u32 = BERG_MAX_SIZE + 5;
+pub const GRID_SIZE: u32 = 10;
 
 fn main() -> Result<(), String> {
     println!("Welcome to the Endurance demo");

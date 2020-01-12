@@ -135,7 +135,6 @@ impl World {
         }
 
         // Each tick, compute the current grid position of each iceberg
-        /*
         let mut grid = HashMap::new();
         for ice in self.ices.iter() {
             let (grid_x, grid_y) = ice.calc_grid();
@@ -144,7 +143,6 @@ impl World {
             let mut row = col.entry(grid_y).or_insert(Vec::new());
             row.push(ice.clone());
         }
-        */
 
 
         // Update the boat position even if it's not colliding
@@ -162,12 +160,9 @@ impl World {
 
             // Colocated bergs - hopefully only a few
             // TODO: This should check if the subject is close enough to the edge of the
-            // grid to collide with something in an adjacent grid. if so, that grid should
-            // also be checked for collisions. However, this is not the bottleneck (yet)
-            // let others_in_grid = grid.get(&grid_x).unwrap().get(&grid_y).unwrap();
-            // let collisions = World::find_collisions_2(&others_in_grid, &ice);
-
-            let collisions = World::find_collisions_2(&current_ices, &ice);
+            // TODO: grid to collide with something in an adjacent grid
+            let others_in_grid = grid.get(&grid_x).unwrap().get(&grid_y).unwrap();
+            let collisions = World::find_collisions_2(&others_in_grid, &ice);
 
             for collision in collisions {
 
