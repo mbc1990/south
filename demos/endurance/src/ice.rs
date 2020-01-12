@@ -4,6 +4,7 @@ use rand::Rng;
 use sdl2::pixels::Color;
 use crate::vector::{Vector};
 use crate::physics_element::PhysicsElement;
+use crate::{GRID_SIZE, HEIGHT, WIDTH, BERG_MIN_SIZE, BERG_MAX_SIZE};
 
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
@@ -41,7 +42,14 @@ impl Ice {
 
         Ice{direction, position, size, zig_zags}
     }
+
+    pub fn calc_grid(&self) -> (i32, i32) {
+        let grid_x = (self.position.x / GRID_SIZE as f32) as i32;
+        let grid_y = (self.position.y / GRID_SIZE as f32) as i32;
+        return (grid_x, grid_y);
+    }
 }
+
 impl PhysicsElement for Ice {
 
     // Draw the ice to the canvas
@@ -52,10 +60,22 @@ impl PhysicsElement for Ice {
     fn draw_offset_circ(&self, _canvas: &mut WindowCanvas, _offset: &Vector) {}
 
     fn draw_offset(&self, canvas: &mut WindowCanvas, offset: &Vector) {
+        let offset_position = self.position.sub(offset);
+
+        // Don't draw if not visible
+        // TODO: Can be consts computed at compile time
+        let x_min = 0.0 - BERG_MAX_SIZE as f32;
+        let x_max = WIDTH as f32 + BERG_MAX_SIZE as f32;
+        let y_min = 0.0 - BERG_MIN_SIZE as f32;
+        let y_max = HEIGHT as f32 + BERG_MAX_SIZE as f32;
+        if !(offset_position.x > x_min && offset_position.x < x_max && offset_position.y > y_min && offset_position.y < y_max) {
+            return;
+        }
+
         canvas.set_draw_color(Color::RGB(228, 240, 253));
 
         // Rotate a point around the circle representing the iceberg, changing the radius of the point to create jagged edges
-        let offset_position = self.position.sub(offset);
+        println!("Offset position: {:?}", offset_position);
         let point_x = offset_position.x;
         let mut points = Vec::new();
         for i in 0..13 {

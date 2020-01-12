@@ -4,8 +4,9 @@ use crate::physics_element::PhysicsElement;
 use crate::vector::{Vector};
 use sdl2::render::{WindowCanvas};
 use rand::Rng;
-use crate::{BOAT_SIZE, ICE_COLLISION_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE};
+use crate::{BOAT_SIZE, ICE_COLLISION_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE, GRID_SIZE, WIDTH, HEIGHT};
 use crate::keyboard_state::KeyboardState;
+use std::collections::HashMap;
 
 pub struct World {
     size_x: u32,
@@ -133,6 +134,19 @@ impl World {
             self.boat.direction = reflect(self.boat.position, self.boat.direction, collision.get_position(), collision.get_direction());
         }
 
+        // Each tick, compute the current grid position of each iceberg
+        /*
+        let mut grid = HashMap::new();
+        for ice in self.ices.iter() {
+            let (grid_x, grid_y) = ice.calc_grid();
+            println!("Berg pos {:?} grid: {:?}, {:?}", ice.get_position(), grid_x, grid_y);
+            let mut col = grid.entry(grid_x).or_insert(HashMap::new());
+            let mut row = col.entry(grid_y).or_insert(Vec::new());
+            row.push(ice.clone());
+        }
+        */
+
+
         // Update the boat position even if it's not colliding
         self.boat.position = self.boat.position.add(&self.boat.direction);
 
@@ -144,7 +158,17 @@ impl World {
                 ice.direction = reflect(ice.position, ice.direction, boat_pos_start_tick, boat_dir_start_tick);
             }
 
+            let (grid_x, grid_y) = ice.calc_grid();
+
+            // Colocated bergs - hopefully only a few
+            // TODO: This should check if the subject is close enough to the edge of the
+            // grid to collide with something in an adjacent grid. if so, that grid should
+            // also be checked for collisions. However, this is not the bottleneck (yet)
+            // let others_in_grid = grid.get(&grid_x).unwrap().get(&grid_y).unwrap();
+            // let collisions = World::find_collisions_2(&others_in_grid, &ice);
+
             let collisions = World::find_collisions_2(&current_ices, &ice);
+
             for collision in collisions {
 
                 // Don't collide with yourself
@@ -174,7 +198,7 @@ impl World {
     pub fn draw(&self, canvas: &mut WindowCanvas) {
         let offset = self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
         for berg in &self.ices {
-           berg.draw_offset(canvas, &offset);
+            berg.draw_offset(canvas, &offset);
         }
         self.boat.draw_offset_circ(canvas, &offset);
     }
