@@ -138,7 +138,7 @@ impl World {
         let mut grid = HashMap::new();
         for ice in self.ices.iter() {
             let (grid_x, grid_y) = ice.calc_grid();
-            println!("Berg pos {:?} grid: {:?}, {:?}", ice.get_position(), grid_x, grid_y);
+            // println!("Berg pos {:?} grid: {:?}, {:?}", ice.get_position(), grid_x, grid_y);
             let mut col = grid.entry(grid_x).or_insert(HashMap::new());
             let mut row = col.entry(grid_y).or_insert(Vec::new());
             row.push(ice.clone());
@@ -161,8 +161,89 @@ impl World {
             // Colocated bergs - hopefully only a few
             // TODO: This should check if the subject is close enough to the edge of the
             // TODO: grid to collide with something in an adjacent grid
-            let others_in_grid = grid.get(&grid_x).unwrap().get(&grid_y).unwrap();
-            let collisions = World::find_collisions_2(&others_in_grid, &ice);
+
+            // TODO: This only returns the berg itself, not the bergs in same grid region
+            let mut others_in_grid = grid.get(&grid_x).unwrap().get(&grid_y).unwrap();
+            let mut possible_collisions = Vec::new();
+            possible_collisions.append(&mut others_in_grid.clone());
+
+            // Grid regions are squares, so the berg can be colliding with objects in up to three
+            // more grid regions adjacent to the one the center of the berg is in.
+            // THIS IS TRUE ONLY WHEN THE GRID SIZE IS LARGER THAN THE LARGEST POSSIBLE ICEBERG
+            let x_1 = (ice.position.x - ice.size as f32) < (grid_x * GRID_SIZE as i32) as f32;
+            let x_2 = (ice.position.x + ice.size as f32) > ((grid_x + 1) * GRID_SIZE as i32) as f32;
+            let y_1 = (ice.position.y - ice.size as f32) < (grid_y * GRID_SIZE as i32) as f32;
+            let y_2 = (ice.position.y + ice.size as f32) > ((grid_y + 1) * GRID_SIZE as i32) as f32;
+
+            if x_1 {
+                let adj_grid_col= grid.get(&(grid_x - 1));
+                match adj_grid_col {
+                    Some(col) => {
+                        let adj_grid_row = col.get(&grid_y);
+                        match adj_grid_row {
+                            Some(bergs) => {
+                                let to_append = bergs.clone();
+                                possible_collisions.append(&mut to_append.clone());
+                            },
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
+            }
+            if x_2 {
+                let adj_grid_col= grid.get(&(grid_x + 1));
+                match adj_grid_col {
+                    Some(col) => {
+                        let adj_grid_row = col.get(&grid_y);
+                        match adj_grid_row {
+                            Some(bergs) => {
+                                let to_append = bergs.clone();
+                                possible_collisions.append(&mut to_append.clone());
+                            },
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
+            }
+            if y_1 {
+                let adj_grid_col= grid.get(&(grid_x));
+                match adj_grid_col {
+                    Some(col) => {
+                        let adj_grid_row = col.get(&(grid_y - 1));
+                        match adj_grid_row {
+                            Some(bergs) => {
+                                let to_append = bergs.clone();
+                                possible_collisions.append(&mut to_append.clone());
+                            },
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
+            }
+            if y_2 {
+                let adj_grid_col= grid.get(&(grid_x));
+                match adj_grid_col {
+                    Some(col) => {
+                        let adj_grid_row = col.get(&(grid_y + 1));
+                        match adj_grid_row {
+                            Some(bergs) => {
+                                let to_append = bergs.clone();
+                                possible_collisions.append(&mut to_append.clone());
+                            },
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
+            }
+
+            // TODO: This isn't working! There should be more than one possible collision
+            println!("Possible collisions: {:?}", possible_collisions.len());
+
+            let collisions = World::find_collisions_2(&possible_collisions, &ice);
 
             for collision in collisions {
 

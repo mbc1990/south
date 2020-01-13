@@ -75,7 +75,6 @@ impl PhysicsElement for Ice {
         canvas.set_draw_color(Color::RGB(228, 240, 253));
 
         // Rotate a point around the circle representing the iceberg, changing the radius of the point to create jagged edges
-        println!("Offset position: {:?}", offset_position);
         let point_x = offset_position.x;
         let mut points = Vec::new();
         for i in 0..13 {
