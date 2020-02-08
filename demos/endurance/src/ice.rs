@@ -25,7 +25,7 @@ pub struct Ice {
     // Ordered list of distances from center
     zig_zags: Vec<u32>,
 
-    pub perimeter: Vec<Point>
+    pub perimeter: Vec<Vector>
 }
 
 impl Ice {
@@ -57,7 +57,7 @@ impl Ice {
             let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
             let r_x = angle_rad.cos() * (point_x as f64 - offset_position_x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- offset_position_y as f64) + offset_position_x as f64;
             let r_y = angle_rad.sin() * (point_x as f64 - offset_position_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- offset_position_y as f64) + offset_position_y as f64;
-            perimeter.push(Point::new(r_x as i32, r_y as i32));
+            perimeter.push(Vector{x: r_x as f32, y: r_y as f32 });
         }
 
         Ice{direction, position, size, zig_zags, perimeter}
@@ -68,11 +68,6 @@ impl Ice {
         let grid_y = (self.position.y / GRID_SIZE as f32) as i32;
         return (grid_x, grid_y);
     }
-    /*
-    pub fn get_points(&self) -> Vec<Point> {
-
-    }
-    */
 }
 
 impl PhysicsElement for Ice {
@@ -102,7 +97,7 @@ impl PhysicsElement for Ice {
             let p1 = self.perimeter.get(i).unwrap();
             let p2 = self.perimeter.get(i+1).unwrap();
             // TODO: make more readable
-            canvas.draw_line(Point::new(p1.x + self.position.x as i32 - offset.x as i32, p1.y + self.position.y as i32 - offset.y as i32), Point::new(p2.x + self.position.x as i32 - offset.x as i32, p2.y + self.position.y as i32 - offset.y as i32)).unwrap();
+            canvas.draw_line(Point::new((p1.x + self.position.x - offset.x) as i32, (p1.y + self.position.y - offset.y) as i32), Point::new((p2.x + self.position.x - offset.x) as i32, (p2.y + self.position.y - offset.y) as i32)).unwrap();
         }
     }
 
