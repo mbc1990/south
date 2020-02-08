@@ -105,6 +105,12 @@ impl World {
         return collisions;
     }
 
+    // Compares line segments making up bergs to see if they actually interact
+    fn is_real_collision(ice_a: &Ice, ice_b: &Ice) -> bool {
+        return true;
+    }
+
+
     fn respond_to_input(&mut self, keyboard_state: &KeyboardState) {
         if keyboard_state.w {
             self.key_w();
@@ -148,6 +154,9 @@ impl World {
 
         let boat_pos_start_tick = self.boat.position.clone();
         let boat_dir_start_tick = self.boat.direction.clone();
+
+        // let dir = Vector{x:0.0, y:-1.0};
+        // self.boat.direction = self.boat.direction.add(&dir);
 
         // Boat collisions
         let boat_collisions = self.find_collisions(&self.boat);
@@ -216,6 +225,7 @@ impl World {
                 possible_collisions.append(&mut to_append.clone());
             }
 
+            // Collisions from circular bounding box
             let collisions = World::find_collisions_2(&possible_collisions, &ice);
 
             for collision in collisions {

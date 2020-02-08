@@ -23,7 +23,9 @@ pub struct Ice {
     pub size: u32,
 
     // Ordered list of distances from center
-    zig_zags: Vec<u32>
+    zig_zags: Vec<u32>,
+
+    pub perimeter: Vec<Point>
 }
 
 impl Ice {
@@ -32,15 +34,33 @@ impl Ice {
         let mut zig_zags = Vec::new();
         let mut rng = rand::thread_rng();
         for _ in 0..12 {
-            // let zig_zag_factor = rng.gen_range(size - size/2, size);
-            // zig_zags.push(zig_zag_factor);
-            zig_zags.push(size);
+            let zig_zag_factor = rng.gen_range(size - size/2, size);
+            zig_zags.push(zig_zag_factor);
+            // zig_zags.push(size);
         }
 
         // Last one should be the same as the first so the shape is closed
         zig_zags.push(*zig_zags.get(0).unwrap());
 
-        Ice{direction, position, size, zig_zags}
+
+        // Rotate a point around the circle representing the iceberg, changing the radius of the point to create jagged edges
+        // TODO: Simplify math
+        let mut perimeter  =  Vec::new();
+        let point_x = 0;
+        let point_y = 0;
+        let offset_position_x = 0.0;
+        let offset_position_y = 0.0;
+        for i in 0..13 {
+            let angle = i * 30;
+            let zig_zag_factor = zig_zags.get(i).unwrap();
+            let zig_zagged_point_y = offset_position_y + *zig_zag_factor as f32;
+            let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
+            let r_x = angle_rad.cos() * (point_x as f64 - offset_position_x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- offset_position_y as f64) + offset_position_x as f64;
+            let r_y = angle_rad.sin() * (point_x as f64 - offset_position_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- offset_position_y as f64) + offset_position_y as f64;
+            perimeter.push(Point::new(r_x as i32, r_y as i32));
+        }
+
+        Ice{direction, position, size, zig_zags, perimeter}
     }
 
     pub fn calc_grid(&self) -> (i32, i32) {
@@ -48,6 +68,11 @@ impl Ice {
         let grid_y = (self.position.y / GRID_SIZE as f32) as i32;
         return (grid_x, grid_y);
     }
+    /*
+    pub fn get_points(&self) -> Vec<Point> {
+
+    }
+    */
 }
 
 impl PhysicsElement for Ice {
@@ -60,10 +85,8 @@ impl PhysicsElement for Ice {
     fn draw_offset_circ(&self, _canvas: &mut WindowCanvas, _offset: &Vector) {}
 
     fn draw_offset(&self, canvas: &mut WindowCanvas, offset: &Vector) {
-        let offset_position = self.position.sub(offset);
-
         // Don't draw if not visible
-        // TODO: Can be consts computed at compile time
+        let offset_position = self.position.sub(offset);
         let x_min = 0.0 - BERG_MAX_SIZE as f32;
         let x_max = WIDTH as f32 + BERG_MAX_SIZE as f32;
         let y_min = 0.0 - BERG_MIN_SIZE as f32;
@@ -74,24 +97,12 @@ impl PhysicsElement for Ice {
 
         canvas.set_draw_color(Color::RGB(228, 240, 253));
 
-        // Rotate a point around the circle representing the iceberg, changing the radius of the point to create jagged edges
-        let point_x = offset_position.x;
-        let mut points = Vec::new();
-        for i in 0..13 {
-            let angle = i * 30;
-            let zig_zag_factor = self.zig_zags.get(i).unwrap();
-            let zig_zagged_point_y = offset_position.y + *zig_zag_factor as f32;
-            let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
-            let r_x = angle_rad.cos() * (point_x as f64 - offset_position.x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- offset_position.y as f64) + offset_position.x as f64;
-            let r_y = angle_rad.sin() * (point_x as f64 - offset_position.x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- offset_position.y as f64) + offset_position.y as f64;
-            points.push(Point::new(r_x as i32, r_y as i32));
-        }
-
         // Connect the points of the iceberg polygon with lines
-        for i in 0..points.len() - 1 {
-            let p1 = points.get(i).unwrap();
-            let p2 = points.get(i+1).unwrap();
-            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
+        for i in 0..self.perimeter.len() - 1 {
+            let p1 = self.perimeter.get(i).unwrap();
+            let p2 = self.perimeter.get(i+1).unwrap();
+            // TODO: make more readable
+            canvas.draw_line(Point::new(p1.x + self.position.x as i32 - offset.x as i32, p1.y + self.position.y as i32 - offset.y as i32), Point::new(p2.x + self.position.x as i32 - offset.x as i32, p2.y + self.position.y as i32 - offset.y as i32)).unwrap();
         }
     }
 
