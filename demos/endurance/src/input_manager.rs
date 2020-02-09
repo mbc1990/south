@@ -20,48 +20,48 @@ impl InputManager {
             match event {
                 Event::KeyDown { keycode: Some(Keycode::W), repeat: false, .. } => {
                     // world.key_w();
-                    println!("Key down W");
+                    // println!("Key down W");
                     self.keyboard_state.w = true;
                 },
                 Event::KeyDown { keycode: Some(Keycode::A), repeat: false, .. } => {
                     // world.key_a();
-                    println!("Key down A");
+                    // println!("Key down A");
                     self.keyboard_state.a = true;
                 },
                 Event::KeyDown { keycode: Some(Keycode::S), repeat: false, .. } => {
                     // world.key_s();
-                    println!("Key down S");
+                    // println!("Key down S");
                     self.keyboard_state.s = true;
                 },
                 Event::KeyDown { keycode: Some(Keycode::D), repeat: false, .. } => {
                     // world.key_d();
-                    println!("Key down D");
+                    // println!("Key down D");
                     self.keyboard_state.d = true;
                 },
                 Event::KeyDown { keycode: Some(Keycode::Escape), repeat: false, .. } => {
                     // world.key_d();
-                    println!("Key down esc");
+                    // println!("Key down esc");
                     self.keyboard_state.esc = true;
                 },
                 Event::KeyUp { keycode: Some(Keycode::W), repeat: false, .. } => {
                     self.keyboard_state.w = false;
-                    println!("Key up W");
+                    // println!("Key up W");
                 },
                 Event::KeyUp { keycode: Some(Keycode::A), repeat: false, .. } => {
                     self.keyboard_state.a = false;
-                    println!("Key up A");
+                    // println!("Key up A");
                 },
                 Event::KeyUp { keycode: Some(Keycode::S), repeat: false, .. } => {
                     self.keyboard_state.s = false;
-                    println!("Key up S");
+                    // println!("Key up S");
                 },
                 Event::KeyUp { keycode: Some(Keycode::D), repeat: false, .. } => {
                     self.keyboard_state.d = false;
-                    println!("Key up D");
+                    // println!("Key up D");
                 },
                 Event::KeyUp{ keycode: Some(Keycode::Escape), repeat: false, .. } => {
                     // world.key_d();
-                    println!("Key down esc");
+                    // println!("Key down esc");
                     self.keyboard_state.esc = false;
                 },
                 /*

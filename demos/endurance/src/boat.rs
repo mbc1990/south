@@ -18,7 +18,7 @@ pub struct Boat {
 impl Boat {
 
     pub fn new(position: Vector , size: u32) -> Boat {
-        return Boat{direction: Vector{x: 0.0, y: -1.0}, position, size};
+        return Boat{direction: Vector{x: 0.0, y: -0.0}, position, size};
     }
 
 }

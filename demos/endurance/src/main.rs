@@ -30,7 +30,7 @@ pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.tt
 
 // TODO: This can be optimized but affects gameplay behavior
 pub const GRID_SIZE: u32 = BERG_MAX_SIZE + 5;
-// pub const GRID_SIZE: u32 = 10;
+// pub const GRID_SIZE: u32 = 10000;
 
 fn main() -> Result<(), String> {
     println!("Welcome to the Endurance demo");
