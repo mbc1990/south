@@ -109,6 +109,7 @@ impl World {
 
     // Implementation adapted from:
     // https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+    // TODO: Return enum not int
     fn orientation(p: Vector, q: Vector, r: Vector) -> i32 {
 
         let val = (q.y - p.y) * (r.x - q.x) - (q.x- p.x) * (r.y - q.y);
@@ -119,13 +120,6 @@ impl World {
             return 1;
         }
         return 2;
-       /*
-          int val = (q.y - p.y) * (r.x - q.x) -
-                    (q.x - p.x) * (r.y - q.y);
-          if (val == 0) return 0;  // colinear
-
-          return (val > 0)? 1: 2; // clock or counterclock wise
-       */
     }
 
     fn on_segment(p: Vector, q: Vector, r: Vector) -> bool {
@@ -135,21 +129,8 @@ impl World {
         return false;
     }
 
-    /*
-   bool onSegment(Point p, Point q, Point r)
-{
-    if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) &&
-        q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y))
-       return true;
-
-    return false;
-}
-    */
-
-
 
     // Compares line segments making up bergs to see if they actually interact
-    // TODO: Definitely some bugs in here, doesn't break all collisions but breaks some
     fn is_real_collision(ice_a: &Ice, ice_b: &Ice) -> bool {
         // return true;
         for i in 0..ice_a.perimeter.len() - 1 {
@@ -167,37 +148,6 @@ impl World {
         }
         return false;
     }
-
-    /*
-   bool doIntersect(Point p1, Point q1, Point p2, Point q2)
-{
-    // Find the four orientations needed for general and
-    // special cases
-    int o1 = orientation(p1, q1, p2);
-    int o2 = orientation(p1, q1, q2);
-    int o3 = orientation(p2, q2, p1);
-    int o4 = orientation(p2, q2, q1);
-
-    // General case
-    if (o1 != o2 && o3 != o4)
-        return true;
-
-    // Special Cases
-    // p1, q1 and p2 are colinear and p2 lies on segment p1q1
-    if (o1 == 0 && onSegment(p1, p2, q1)) return true;
-
-    // p1, q1 and q2 are colinear and q2 lies on segment p1q1
-    if (o2 == 0 && onSegment(p1, q2, q1)) return true;
-
-    // p2, q2 and p1 are colinear and p1 lies on segment p2q2
-    if (o3 == 0 && onSegment(p2, p1, q2)) return true;
-
-     // p2, q2 and q1 are colinear and q1 lies on segment p2q2
-    if (o4 == 0 && onSegment(p2, q1, q2)) return true;
-
-    return false; // Doesn't fall in any of the above cases
-
-    */
 
     fn lines_intersect(p1: Vector, q1: Vector, p2: Vector, q2: Vector) -> bool {
 
@@ -311,11 +261,7 @@ impl World {
             let (grid_x, grid_y) = ice.calc_grid();
 
             // Colocated bergs - hopefully only a few
-            // TODO: This should check if the subject is close enough to the edge of the
-            // TODO: grid to collide with something in an adjacent grid
-
             // TODO: This only returns the berg itself, not the bergs in same grid region
-            // let mut others_in_grid = grid.get(&grid_x).unwrap().get(&grid_y).unwrap();
             let mut others_in_grid = World::get_grid_region_bergs(&grid, grid_x, grid_y).unwrap();
             let mut possible_collisions = Vec::new();
             possible_collisions.append(&mut others_in_grid.clone());
@@ -350,9 +296,6 @@ impl World {
             // Collisions from circular bounding box
             let collisions = World::find_collisions_2(&possible_collisions, &ice);
 
-            if collisions.len() > 0 {
-                println!("Collisions: {:?}", collisions);
-            }
 
             for collision in collisions {
 
@@ -362,10 +305,7 @@ impl World {
                 }
 
                 if (World::is_real_collision(&ice, &collision)) {
-                    println!("Real collision");
                     ice.direction = reflect(ice.position, ice.direction, collision.position, collision.direction);
-                } else {
-                    println!("Not a real collision, but would have been");
                 }
             }
 
