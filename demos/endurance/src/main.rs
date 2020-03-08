@@ -22,10 +22,10 @@ pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
 pub const FPS: u32 = 30;
 pub const BOAT_SIZE: u32 = 50;
-pub const NUM_BERGS: i32 = 3000;
-pub const BERG_MIN_SIZE: u32 = 5;
+pub const NUM_BERGS: i32 = 500;
+pub const BERG_MIN_SIZE: u32 = 10;
 pub const BERG_MAX_SIZE: u32 = 200;
-pub const ICE_DECEL_FACTOR: f32 = 0.97;
+pub const ICE_DECEL_FACTOR: f32 = 0.99;
 pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";
 
 // TODO: This can be optimized but affects gameplay behavior
