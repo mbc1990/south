@@ -43,15 +43,15 @@ impl World {
     }
     pub fn key_a(&mut self) {
         let dir = Vector{x:-1.0, y:0.0};
-        self.boat.direction = self.boat.direction.add(&dir);
+        self.boat.direction = self.boat.direction.add(&dir.mul(0.5));
     }
     pub fn key_s(&mut self) {
         let dir = Vector{x:0.0, y:1.0};
-        self.boat.direction = self.boat.direction.add(&dir);
+        self.boat.direction = self.boat.direction.add(&dir.mul(0.1));
     }
     pub fn key_d(&mut self) {
         let dir = Vector{x:1.0, y:0.0};
-        self.boat.direction = self.boat.direction.add(&dir);
+        self.boat.direction = self.boat.direction.add(&dir.mul(0.5));
     }
 
     pub fn init_with_random_ice(&mut self, mut num_bergs: i32) {
