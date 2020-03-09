@@ -168,7 +168,6 @@ impl PhysicsElement for Boat {
         }
 
         // Draw front circle
-
         // Same x
         let front_point_x = offset_position.x;
         let front_point_y = offset_position.y - (self.size as f32 + self.size as f32 / 2.0);
@@ -189,7 +188,6 @@ impl PhysicsElement for Boat {
             let p2 = points.get(i+1).unwrap();
             canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
         }
-
     }
 
 
