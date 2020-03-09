@@ -98,6 +98,34 @@ impl World {
         return collisions;
     }
 
+    fn find_boat_collisions(&self, ices: &Vec<Ice>) -> Vec<Ice> {
+
+        /*
+        // Old implementation
+        for other_ice in self.ices.iter() {
+            if &other_ice.position != &ice.get_position() && euc_distance(&other_ice.position, &ice.get_position()) < (other_ice.get_size() + ice.get_size() as u32) as f32 {
+               // collisions.push(Box::new(ice.clone()));
+                collisions.push(Box::new(other_ice.clone()) as Box<dyn PhysicsElement>);
+            }
+        }
+        */
+
+        let mut collisions = Vec::new();
+        for other_ice in ices.iter() {
+            // Check each of the circles that make up the boat
+            if &other_ice.position != &self.boat.get_position() && euc_distance(&other_ice.position, &self.boat.get_position()) < (other_ice.get_size() + self.boat.get_size() as u32) as f32 {
+                // collisions.push(Box::new(ice.clone()));
+                collisions.push(other_ice.clone());
+                continue;
+            }
+
+            // TODO: front and back circles
+
+        }
+
+        return collisions;
+    }
+
     // same thing as the other one
     fn find_collisions_2<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
         let collisions = ices.iter()
@@ -231,7 +259,9 @@ impl World {
         // self.boat.direction = self.boat.direction.add(&dir);
 
         // Boat collisions
-        let boat_collisions = self.find_collisions(&self.boat);
+        // let boat_collisions = self.find_collisions(&self.boat);
+
+        let boat_collisions = self.find_boat_collisions(&self.ices);
         for collision in boat_collisions {
             self.boat.direction = reflect(self.boat.position, self.boat.direction, collision.get_position(), collision.get_direction());
         }
@@ -257,6 +287,7 @@ impl World {
             if euc_distance(&boat_pos_start_tick, &ice.position) < (self.boat.size + ice.size) as f32 {
                 ice.direction = reflect(ice.position, ice.direction, boat_pos_start_tick, boat_dir_start_tick);
             }
+            // TODO: If ice is colliding with front circle, update it
 
             let (grid_x, grid_y) = ice.calc_grid();
 
