@@ -28,35 +28,52 @@ impl Boat {
         canvas.set_draw_color(Color::RGB(213, 183, 143));
 
         let offset_position = self.position.sub(offset);
-        // For debugging TODO: Delete
-        let p1 = Point::new(offset_position.x as i32, offset_position.y as i32);
+        let mut xs: Vec<i16> = Vec::new();
+        let mut ys: Vec<i16> = Vec::new();
 
         // Port bow
         let l1_p1_x  = offset_position.x - (self.size * 1) as f32;
         let l1_p1_y  = offset_position.y -  (self.size * 1) as f32;
-        let l1_p1 = Point::new(l1_p1_x as i32, l1_p1_y as i32);
+        xs.push(l1_p1_x as i16);
+        ys.push(l1_p1_y as i16);
+
+        // let l1_p1 = Point::new(l1_p1_x as i32, l1_p1_y as i32);
         let l1_p2_x = offset_position.x;
         let l1_p2_y = offset_position.y - (self.size * 3) as f32;
-        let l1_p2 = Point::new(l1_p2_x as i32, l1_p2_y as i32);
-        canvas.draw_line(l1_p1, l1_p2);
+        // let l1_p2 = Point::new(l1_p2_x as i32, l1_p2_y as i32);
+        xs.push(l1_p2_x as i16);
+        ys.push(l1_p2_y as i16);
+
+        // canvas.draw_line(l1_p1, l1_p2);
 
         // Starboard bow
         let l2_p1_x  = offset_position.x + (self.size * 1) as f32;
         let l2_p1_y  = offset_position.y -  (self.size * 1) as f32;
-        let l2_p1 = Point::new(l2_p1_x as i32, l2_p1_y as i32);
+        xs.push(l2_p1_x as i16);
+        ys.push(l2_p1_y as i16);
+        // let l2_p1 = Point::new(l2_p1_x as i32, l2_p1_y as i32);
+
+        /*
         let l2_p2_x = offset_position.x;
         let l2_p2_y = offset_position.y - (self.size * 3) as f32;
         let l2_p2 = Point::new(l2_p2_x as i32, l2_p2_y as i32);
         canvas.draw_line(l2_p1, l2_p2);
+        */
 
         // Starboard side
+        /*
         let l3_p1_x  = offset_position.x + (self.size * 1) as f32;
         let l3_p1_y  = offset_position.y - (self.size * 1) as f32;
         let l3_p1 = Point::new(l3_p1_x as i32, l3_p1_y as i32);
+        */
         let l3_p2_x = offset_position.x + (self.size * 1) as f32;
         let l3_p2_y = offset_position.y + (self.size * 1) as f32;
-        let l3_p2 = Point::new(l3_p2_x as i32, l3_p2_y as i32);
-        canvas.draw_line(l3_p1, l3_p2);
+        // let l3_p2 = Point::new(l3_p2_x as i32, l3_p2_y as i32);
+        xs.push(l3_p2_x as i16);
+        ys.push(l3_p2_y as i16);
+        // canvas.draw_line(l3_p1, l3_p2);
+
+        /*
 
         // Port side
         let l4_p1_x  = offset_position.x - (self.size * 1) as f32;
@@ -124,6 +141,9 @@ impl Boat {
         let l10_p2_y = offset_position.y + (self.size + (self.size / 2)) as f32;
         let l10_p2 = Point::new(l10_p2_x as i32, l10_p2_y as i32);
         canvas.draw_line(l10_p1, l10_p2);
+        */
+
+        canvas.filled_polygon(&xs, &ys, Color::RGB(213, 183, 143));
     }
 
 }
