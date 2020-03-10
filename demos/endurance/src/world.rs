@@ -379,6 +379,6 @@ impl World {
             berg.draw_offset(canvas, &offset);
         }
         self.boat.draw_offset_detail(canvas, &offset);
-        self.boat.draw_offset_circ(canvas, &offset);
+        // self.boat.draw_offset_circ(canvas, &offset);
     }
 }

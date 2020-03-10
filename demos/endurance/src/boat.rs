@@ -71,8 +71,15 @@ impl Boat {
         let l6_p1_y  = offset_position.y + (self.size * 1) as f32;
         xs.push(l6_p1_x as i16);
         ys.push(l6_p1_y as i16);
-
         canvas.filled_polygon(&xs, &ys, Color::RGB(213, 183, 143));
+
+        // Deck bow deck structure
+        let mut recs = Vec::new();
+        recs.push(Rect::from(((offset_position.x - (self.size/ 2) as f32) as i32, (offset_position.y - (self.size as f32 * 1.75) )as i32, self.size, self.size*2)));
+        recs.push(Rect::from(((offset_position.x - (self.size/ 2) as f32) as i32, (offset_position.y + self.size as f32 / 2.0) as i32, self.size, self.size)));
+
+        canvas.set_draw_color(Color::RGB(148, 101, 37));
+        canvas.draw_rects(&recs);
 
 
         // Sails
