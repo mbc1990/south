@@ -301,6 +301,12 @@ impl World {
                 ice.direction = reflect(ice.position, ice.direction, bow_pos, boat_dir_start_tick);
             }
 
+            // Rear circle
+            let front_pos = boat_pos_start_tick.sub(&Vector{x:0.0, y: -1.0 * (self.boat.size as f32 + self.boat.size as f32/ 2.0)});
+            if euc_distance(&front_pos, &ice.position) < ((self.boat.size as f32/ 2.0)+ ice.size as f32) as f32 {
+                ice.direction = reflect(ice.position, ice.direction, front_pos, boat_dir_start_tick);
+            }
+
             let (grid_x, grid_y) = ice.calc_grid();
 
             // Colocated bergs - hopefully only a few

@@ -209,6 +209,28 @@ impl PhysicsElement for Boat {
             let p2 = points.get(i+1).unwrap();
             canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
         }
+
+        // Draw rear circle
+        let rear_l_point_x = offset_position.x;
+        let rear_l_point_y = offset_position.y + (self.size as f32 + self.size as f32 / 2.0);
+        let mut points = Vec::new();
+        for i in 0..13 {
+            let angle = i * 30;
+            let zig_zag_factor = &(self.size as f32 / 2.0);
+            let zig_zagged_point_y = rear_l_point_y + *zig_zag_factor as f32;
+            let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
+            let r_x = angle_rad.cos() * (rear_l_point_x as f64 - rear_l_point_x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- rear_l_point_y as f64) + rear_l_point_x as f64;
+            let r_y = angle_rad.sin() * (rear_l_point_x as f64 - rear_l_point_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- rear_l_point_y as f64) + rear_l_point_y as f64;
+            points.push(Point::new(r_x as i32, r_y as i32));
+        }
+
+        for i in 0..points.len() - 1 {
+            let p1 = points.get(i).unwrap();
+            let p2 = points.get(i+1).unwrap();
+            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
+        }
+
+
     }
 
 
