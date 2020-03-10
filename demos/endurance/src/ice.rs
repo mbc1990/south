@@ -5,6 +5,7 @@ use sdl2::pixels::Color;
 use crate::vector::{Vector};
 use crate::physics_element::PhysicsElement;
 use crate::{GRID_SIZE, HEIGHT, WIDTH, BERG_MIN_SIZE, BERG_MAX_SIZE};
+use sdl2::gfx::primitives::DrawRenderer;
 
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
@@ -92,13 +93,17 @@ impl PhysicsElement for Ice {
 
         canvas.set_draw_color(Color::RGB(228, 240, 253));
 
+        let mut xs = Vec::new();
+        let mut ys= Vec::new();
+
         // Connect the points of the iceberg polygon with lines
         for i in 0..self.perimeter.len() - 1 {
             let p1 = self.perimeter.get(i).unwrap();
-            let p2 = self.perimeter.get(i+1).unwrap();
-            // TODO: make more readable
-            canvas.draw_line(Point::new((p1.x + self.position.x - offset.x) as i32, (p1.y + self.position.y - offset.y) as i32), Point::new((p2.x + self.position.x - offset.x) as i32, (p2.y + self.position.y - offset.y) as i32)).unwrap();
+            xs.push((p1.x + self.position.x - offset.x) as i16);
+            ys.push((p1.y + self.position.y - offset.y)as i16);
         }
+
+        canvas.filled_polygon(&xs, &ys, Color::RGB(228, 240, 253));
     }
 
     fn get_size(&self) -> u32 {
