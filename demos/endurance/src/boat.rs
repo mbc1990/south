@@ -21,6 +21,8 @@ impl Boat {
         return Boat{direction: Vector{x: 0.0, y: -0.0}, position, size};
     }
 
+    // TODO: Is there a way to fill the boat polygon without using fill_rect?
+    // TODO: I guess it would be better to introduce an art asset here...
     pub fn draw_offset_detail(&self, canvas: &mut WindowCanvas, offset: &Vector) {
         canvas.set_draw_color(Color::RGB(213, 183, 143));
 
@@ -157,7 +159,6 @@ impl PhysicsElement for Boat {
             points.push(Point::new(r_x as i32, r_y as i32));
         }
 
-        // Connect the points of the iceberg polygon with lines
         for i in 0..points.len() - 1 {
             let p1 = points.get(i).unwrap();
             let p2 = points.get(i+1).unwrap();
@@ -178,7 +179,27 @@ impl PhysicsElement for Boat {
             let zig_zagged_point_y = front_point_y + *zig_zag_factor as f32;
             let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
             let r_x = angle_rad.cos() * (front_point_x as f64 - front_point_x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- front_point_y as f64) + front_point_x as f64;
-            let r_y = angle_rad.sin() * (point_x as f64 - front_point_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- front_point_y as f64) + front_point_y as f64;
+            let r_y = angle_rad.sin() * (front_point_x as f64 - front_point_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- front_point_y as f64) + front_point_y as f64;
+            points.push(Point::new(r_x as i32, r_y as i32));
+        }
+
+        for i in 0..points.len() - 1 {
+            let p1 = points.get(i).unwrap();
+            let p2 = points.get(i+1).unwrap();
+            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
+        }
+
+        // Draw bow circle
+        let bow_point_x = offset_position.x;
+        let bow_point_y = offset_position.y - ((2.0 * self.size as f32) + (self.size as f32 / 4.0));
+        let mut points = Vec::new();
+        for i in 0..13 {
+            let angle = i * 30;
+            let zig_zag_factor = &(self.size as f32 / 4.0);  // TODO: This is actually the radius, all this needs to be rewritten
+            let zig_zagged_point_y = bow_point_y + *zig_zag_factor as f32;
+            let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
+            let r_x = angle_rad.cos() * (bow_point_x as f64 - bow_point_x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- bow_point_y as f64) + bow_point_x as f64;
+            let r_y = angle_rad.sin() * (point_x as f64 - bow_point_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- bow_point_y as f64) + bow_point_y as f64;
             points.push(Point::new(r_x as i32, r_y as i32));
         }
 

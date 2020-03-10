@@ -64,7 +64,7 @@ impl World {
             let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:0.0, y:0.0}, berg_size);
             let collisions = self.find_collisions(&berg);
 
-            if euc_distance(&self.boat.position, &berg.position) < (self.boat.size + *&berg.size) as f32 {
+            if euc_distance(&self.boat.position, &berg.position) < (self.boat.size * 3 + *&berg.size) as f32 {
                continue;
             }
 
@@ -288,10 +288,17 @@ impl World {
             if euc_distance(&boat_pos_start_tick, &ice.position) < (self.boat.size + ice.size) as f32 {
                 ice.direction = reflect(ice.position, ice.direction, boat_pos_start_tick, boat_dir_start_tick);
             }
+
             // Front circle
             let front_pos = boat_pos_start_tick.add(&Vector{x:0.0, y: -1.0 * (self.boat.size as f32 + self.boat.size as f32/ 2.0)});
             if euc_distance(&front_pos, &ice.position) < ((self.boat.size as f32/ 2.0)+ ice.size as f32) as f32 {
                 ice.direction = reflect(ice.position, ice.direction, front_pos, boat_dir_start_tick);
+            }
+
+            // Bow circle
+            let bow_pos = boat_pos_start_tick.add(&Vector{x:0.0, y: -1.0 * (2.0 * self.boat.size as f32 + self.boat.size as f32/ 4.0)});
+            if euc_distance(&bow_pos, &ice.position) < ((self.boat.size as f32/ 4.0)+ ice.size as f32) as f32 {
+                ice.direction = reflect(ice.position, ice.direction, bow_pos, boat_dir_start_tick);
             }
 
             let (grid_x, grid_y) = ice.calc_grid();
