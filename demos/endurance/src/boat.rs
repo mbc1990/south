@@ -3,6 +3,7 @@ use sdl2::render::{WindowCanvas};
 use sdl2::pixels::Color;
 use crate::vector::{Vector};
 use crate::physics_element::{PhysicsElement};
+use sdl2::gfx::primitives::DrawRenderer;
 
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
@@ -148,88 +149,22 @@ impl PhysicsElement for Boat {
 
         // Center circle
         let point_x = offset_position.x;
-        let mut points = Vec::new();
-        for i in 0..13 {
-            let angle = i * 30;
-            let zig_zag_factor = &self.size;
-            let zig_zagged_point_y = offset_position.y + *zig_zag_factor as f32;
-            let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
-            let r_x = angle_rad.cos() * (point_x as f64 - offset_position.x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- offset_position.y as f64) + offset_position.x as f64;
-            let r_y = angle_rad.sin() * (point_x as f64 - offset_position.x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- offset_position.y as f64) + offset_position.y as f64;
-            points.push(Point::new(r_x as i32, r_y as i32));
-        }
+        canvas.circle(point_x as i16, offset_position.y as i16, self.size as i16, Color::RGB(213, 183, 143));
 
-        for i in 0..points.len() - 1 {
-            let p1 = points.get(i).unwrap();
-            let p2 = points.get(i+1).unwrap();
-
-            // TODO: Handle err case
-            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
-            // canvas.draw_line(Point::new(offset_position.x as i32, offset_position.y as i32), Point::new(p1.x, p1.y)).unwrap();
-        }
-
-        // Draw front circle
-        // Same x
+        // Front circle
         let front_point_x = offset_position.x;
         let front_point_y = offset_position.y - (self.size as f32 + self.size as f32 / 2.0);
-        let mut points = Vec::new();
-        for i in 0..13 {
-            let angle = i * 30;
-            let zig_zag_factor = &(self.size as f32 / 2.0);
-            let zig_zagged_point_y = front_point_y + *zig_zag_factor as f32;
-            let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
-            let r_x = angle_rad.cos() * (front_point_x as f64 - front_point_x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- front_point_y as f64) + front_point_x as f64;
-            let r_y = angle_rad.sin() * (front_point_x as f64 - front_point_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- front_point_y as f64) + front_point_y as f64;
-            points.push(Point::new(r_x as i32, r_y as i32));
-        }
+        canvas.circle(front_point_x as i16, front_point_y as i16, (self.size / 2) as i16, Color::RGB(213, 183, 143));
 
-        for i in 0..points.len() - 1 {
-            let p1 = points.get(i).unwrap();
-            let p2 = points.get(i+1).unwrap();
-            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
-        }
-
-        // Draw bow circle
+        // Bow circle
         let bow_point_x = offset_position.x;
         let bow_point_y = offset_position.y - ((2.0 * self.size as f32) + (self.size as f32 / 4.0));
-        let mut points = Vec::new();
-        for i in 0..13 {
-            let angle = i * 30;
-            let zig_zag_factor = &(self.size as f32 / 4.0);  // TODO: This is actually the radius, all this needs to be rewritten
-            let zig_zagged_point_y = bow_point_y + *zig_zag_factor as f32;
-            let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
-            let r_x = angle_rad.cos() * (bow_point_x as f64 - bow_point_x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- bow_point_y as f64) + bow_point_x as f64;
-            let r_y = angle_rad.sin() * (point_x as f64 - bow_point_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- bow_point_y as f64) + bow_point_y as f64;
-            points.push(Point::new(r_x as i32, r_y as i32));
-        }
+        canvas.circle(bow_point_x as i16, bow_point_y as i16, (self.size / 4) as i16, Color::RGB(213, 183, 143));
 
-        // Connect the points of the iceberg polygon with lines
-        for i in 0..points.len() - 1 {
-            let p1 = points.get(i).unwrap();
-            let p2 = points.get(i+1).unwrap();
-            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
-        }
-
-        // Draw rear circle
-        let rear_l_point_x = offset_position.x;
-        let rear_l_point_y = offset_position.y + (self.size as f32 + self.size as f32 / 2.0);
-        let mut points = Vec::new();
-        for i in 0..13 {
-            let angle = i * 30;
-            let zig_zag_factor = &(self.size as f32 / 2.0);
-            let zig_zagged_point_y = rear_l_point_y + *zig_zag_factor as f32;
-            let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
-            let r_x = angle_rad.cos() * (rear_l_point_x as f64 - rear_l_point_x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- rear_l_point_y as f64) + rear_l_point_x as f64;
-            let r_y = angle_rad.sin() * (rear_l_point_x as f64 - rear_l_point_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- rear_l_point_y as f64) + rear_l_point_y as f64;
-            points.push(Point::new(r_x as i32, r_y as i32));
-        }
-
-        for i in 0..points.len() - 1 {
-            let p1 = points.get(i).unwrap();
-            let p2 = points.get(i+1).unwrap();
-            canvas.draw_line(Point::new(p1.x, p1.y), Point::new(p2.x, p2.y)).unwrap();
-        }
-
+        // Rear circle
+        let rear_point_x = offset_position.x;
+        let rear_point_y = offset_position.y + (self.size as f32 + self.size as f32 / 2.0);
+        canvas.circle(rear_point_x as i16, rear_point_y as i16, (self.size / 2) as i16, Color::RGB(213, 183, 143));
 
     }
 
