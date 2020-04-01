@@ -4,7 +4,7 @@ use crate::physics_element::PhysicsElement;
 use crate::vector::{Vector};
 use sdl2::render::{WindowCanvas};
 use rand::Rng;
-use crate::{BOAT_SIZE, ICE_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE, GRID_SIZE, WIDTH, HEIGHT};
+use crate::{BOAT_SIZE, ICE_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE, GRID_SIZE, WIDTH, HEIGHT, DEBUG_MODE};
 use crate::keyboard_state::KeyboardState;
 use std::collections::HashMap;
 use core::cmp;
@@ -386,11 +386,13 @@ impl World {
 
 
         // Hack - push all bergs still colliding with the boat away
+        /*
         for mut ice in self.ices.iter_mut() {
             while euc_distance(&boat_pos_start_tick, &ice.position) < (self.boat.size + ice.size) as f32 {
                 ice.position = ice.position.add(&boat_dir_start_tick);
             }
         }
+        */
     }
 
     pub fn draw(&self, canvas: &mut WindowCanvas) {
@@ -398,7 +400,10 @@ impl World {
         for berg in &self.ices {
             berg.draw_offset(canvas, &offset);
         }
-        self.boat.draw_offset_detail(canvas, &offset);
-        // self.boat.draw_offset_circ(canvas, &offset);
+        if DEBUG_MODE {
+            self.boat.draw_offset_circ(canvas, &offset);
+        } else {
+            self.boat.draw_offset_detail(canvas, &offset);
+        }
     }
 }

@@ -4,7 +4,7 @@ use rand::Rng;
 use sdl2::pixels::Color;
 use crate::vector::{Vector};
 use crate::physics_element::PhysicsElement;
-use crate::{GRID_SIZE, HEIGHT, WIDTH, BERG_MIN_SIZE, BERG_MAX_SIZE};
+use crate::{GRID_SIZE, HEIGHT, WIDTH, BERG_MIN_SIZE, BERG_MAX_SIZE, DEBUG_MODE};
 use sdl2::gfx::primitives::DrawRenderer;
 
 // Represents a discrete piece of ice
@@ -120,10 +120,12 @@ impl PhysicsElement for Ice {
             inner_xs.push((p1.x + self.position.x - offset.x) as i16);
             inner_ys.push((p1.y + self.position.y - offset.y) as i16);
         }
-        // canvas.filled_polygon(&xs, &ys, Color::RGB(192, 234, 242));
-
-        canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
-        // canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
+        if DEBUG_MODE {
+            canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
+        } else {
+            canvas.filled_polygon(&xs, &ys, Color::RGB(192, 234, 242));
+            canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
+        }
     }
 
     fn get_size(&self) -> u32 {
