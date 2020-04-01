@@ -28,11 +28,7 @@ pub const BERG_MAX_SIZE: u32 = 200;
 pub const ICE_DECEL_FACTOR: f32 = 0.99;
 pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";
 
-// TODO: This can be optimized but affects gameplay behavior
-// pub const GRID_SIZE: u32 = BERG_MAX_SIZE;
-
-pub const GRID_SIZE: u32 = BERG_MAX_SIZE + 5;
-// pub const GRID_SIZE: u32 = 10000;
+pub const GRID_SIZE: u32 = 2 * BERG_MAX_SIZE + 10;
 
 fn main() -> Result<(), String> {
     println!("Welcome to the Endurance demo");

@@ -61,7 +61,14 @@ impl World {
             let berg_size = rng.gen_range(BERG_MIN_SIZE, BERG_MAX_SIZE);
             let x = rng.gen_range(berg_size + margin, self.size_x - (berg_size + margin));
             let y = rng.gen_range(-1 * self.size_y as i32 *4, self.size_y as i32 );
-            let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:0.0, y:0.0}, berg_size);
+
+            // Debugging, randomly pick a direction
+            let dir_x = rng.gen_range(0.0,1.0);
+            let dir_y = rng.gen_range(0.0,1.0);
+            let vel = rng.gen_range(1.0, 10.0);
+            let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:dir_x, y:dir_y}, berg_size);
+
+            // let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:0.0, y:0.0}, berg_size);
             let collisions = self.find_collisions(&berg);
 
             if euc_distance(&self.boat.position, &berg.position) < (self.boat.size * 3 + *&berg.size) as f32 {
@@ -250,8 +257,6 @@ impl World {
         // self.boat.direction = self.boat.direction.add(&dir);
 
         // Boat collisions
-        // let boat_collisions = self.find_collisions(&self.boat);
-
         let boat_collisions = self.find_boat_collisions(&self.ices);
         for collision in boat_collisions {
             self.boat.direction = reflect(self.boat.position, self.boat.direction, collision.get_position(), collision.get_direction());
@@ -275,6 +280,8 @@ impl World {
         for mut ice in self.ices.iter_mut() {
 
             // If the ice is colliding with the boat, update it
+            // TODO: This needs to check the more complex boat structure
+            // TODO: It also should be behind an abstraction that shares geometry with the debug boat drawing mode?
             // Center circle
             if euc_distance(&boat_pos_start_tick, &ice.position) < (self.boat.size + ice.size) as f32 {
                 ice.direction = reflect(ice.position, ice.direction, boat_pos_start_tick, boat_dir_start_tick);
@@ -301,14 +308,13 @@ impl World {
             let (grid_x, grid_y) = ice.calc_grid();
 
             // Colocated bergs - hopefully only a few
-            // TODO: This only returns the berg itself, not the bergs in same grid region
             let mut others_in_grid = World::get_grid_region_bergs(&grid, grid_x, grid_y).unwrap();
             let mut possible_collisions = Vec::new();
             possible_collisions.append(&mut others_in_grid.clone());
 
             // Grid regions are squares, so the berg can be colliding with objects in up to three
             // more grid regions adjacent to the one the center of the berg is in.
-            // THIS IS TRUE ONLY WHEN THE GRID SIZE IS LARGER THAN THE LARGEST POSSIBLE ICEBERG
+            // THIS IS TRUE ONLY WHEN THE GRID SIZE IS GREATER THAN 2 * MAX_BERG_SIZE
             // TODO: Also check adjacent corners
             // The bounds here are a little tricky. Our ice might be completely within its grid, but collide with
             // another berg at the edge of an adjacent grid
@@ -334,9 +340,32 @@ impl World {
                 possible_collisions.append(&mut to_append.clone());
             }
 
+            // Upper left corner
+            if x_1 && y_1 {
+                let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y - 1).unwrap();
+                possible_collisions.append(&mut to_append.clone());
+            }
+
+            // Lower left corner
+            if x_1 && y_2 {
+                let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y + 1).unwrap();
+                possible_collisions.append(&mut to_append.clone());
+            }
+
+            // Upper right corner
+            if x_2 && y_1 {
+                let to_append = World::get_grid_region_bergs(&grid, grid_x + 1, grid_y - 1).unwrap();
+                possible_collisions.append(&mut to_append.clone());
+            }
+
+            // Lower right corner
+            if x_2 && y_2 {
+                let to_append = World::get_grid_region_bergs(&grid, grid_x + 1, grid_y + 1).unwrap();
+                possible_collisions.append(&mut to_append.clone());
+            }
+
             // Collisions from circular bounding box
             let collisions = World::find_collisions_2(&possible_collisions, &ice);
-
 
             for collision in collisions {
 
