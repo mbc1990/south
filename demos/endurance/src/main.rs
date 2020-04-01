@@ -45,8 +45,8 @@ fn main() -> Result<(), String> {
     canvas.set_draw_color(Color::RGB(6, 100, 193));
     // clears the canvas with the currently set color
     canvas.clear();
-    world.init_with_random_ice(NUM_BERGS);
-    // world.init_test();
+    // world.init_with_random_ice(NUM_BERGS);
+    world.init_test();
     world.draw(&mut canvas);
     canvas.present();
 

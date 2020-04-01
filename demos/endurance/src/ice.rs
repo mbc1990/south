@@ -109,23 +109,21 @@ impl PhysicsElement for Ice {
         let mut ys= Vec::new();
 
         let mut inner_xs = Vec::new();
-        let mut inner_ys= Vec::new();
+        let mut inner_ys = Vec::new();
 
         // Connect the points of the iceberg polygon with lines
         for i in 0..self.perimeter.len() - 1 {
             let p1 = self.perimeter.get(i).unwrap();
             xs.push((p1.x + self.position.x - offset.x) as i16);
-            ys.push((p1.y + self.position.y - offset.y)as i16);
+            ys.push((p1.y + self.position.y - offset.y) as i16);
             let p1 = self.inner_perimeter.get(i).unwrap();
             inner_xs.push((p1.x + self.position.x - offset.x) as i16);
-            inner_ys.push((p1.y + self.position.y - offset.y)as i16);
+            inner_ys.push((p1.y + self.position.y - offset.y) as i16);
         }
-        /*
-        canvas.filled_polygon(&xs, &ys, Color::RGB(228, 240, 253));
-        canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(192, 234, 242));
-        */
-        canvas.filled_polygon(&xs, &ys, Color::RGB(192, 234, 242));
-        canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
+        // canvas.filled_polygon(&xs, &ys, Color::RGB(192, 234, 242));
+
+        canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
+        // canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
     }
 
     fn get_size(&self) -> u32 {

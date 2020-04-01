@@ -77,10 +77,11 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        // self.ices.push(Ice::new(Vector{x: 100.0, y: 500.0}, Vector{x:2.0, y: 0.0}.mul(0.0), 200));
-        self.ices.push(Ice::new(Vector{x: 800.0, y: 500.0}, Vector{x:0.0, y: 0.0}.mul(0.0), 200));
-        // self.ices.push(Ice::new(Vector{x: 800.0, y: 300.0}, Vector{x:0.0, y: 0.0}.mul(0.0), 200));
-        self.ices.push(Ice::new(Vector{x: 1500.0, y: 500.0}, Vector{x:-2.0, y: 0.0}.mul(0.0), 200));
+
+        // TODO: This reproduces a failed collision detection
+        self.ices.push(Ice::new(Vector{x: 400.0, y: 200.0}, Vector{x:10.0, y: 0.0}.mul(1.0), 100));
+        self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
+        self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }
 
 
@@ -99,16 +100,6 @@ impl World {
     }
 
     fn find_boat_collisions(&self, ices: &Vec<Ice>) -> Vec<Ice> {
-
-        /*
-        // Old implementation
-        for other_ice in self.ices.iter() {
-            if &other_ice.position != &ice.get_position() && euc_distance(&other_ice.position, &ice.get_position()) < (other_ice.get_size() + ice.get_size() as u32) as f32 {
-               // collisions.push(Box::new(ice.clone()));
-                collisions.push(Box::new(other_ice.clone()) as Box<dyn PhysicsElement>);
-            }
-        }
-        */
 
         let mut collisions = Vec::new();
         for other_ice in ices.iter() {
@@ -370,7 +361,6 @@ impl World {
                 ice.position = ice.position.add(&boat_dir_start_tick);
             }
         }
-
     }
 
     pub fn draw(&self, canvas: &mut WindowCanvas) {
