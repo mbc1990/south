@@ -309,12 +309,13 @@ impl World {
             // Grid regions are squares, so the berg can be colliding with objects in up to three
             // more grid regions adjacent to the one the center of the berg is in.
             // THIS IS TRUE ONLY WHEN THE GRID SIZE IS LARGER THAN THE LARGEST POSSIBLE ICEBERG
-            // TODO: Move to function
             // TODO: Also check adjacent corners
-            let x_1 = (ice.position.x - ice.size as f32) < (grid_x * GRID_SIZE as i32) as f32;
-            let x_2 = (ice.position.x + ice.size as f32) > ((grid_x + 1) * GRID_SIZE as i32) as f32;
-            let y_1 = (ice.position.y - ice.size as f32) < (grid_y * GRID_SIZE as i32) as f32;
-            let y_2 = (ice.position.y + ice.size as f32) > ((grid_y + 1) * GRID_SIZE as i32) as f32;
+            // The bounds here are a little tricky. Our ice might be completely within its grid, but collide with
+            // another berg at the edge of an adjacent grid
+            let x_1 = (ice.position.x - ice.size as f32) < ((grid_x * GRID_SIZE as i32) + BERG_MAX_SIZE as i32) as f32;
+            let x_2 = (ice.position.x + ice.size as f32) > (((grid_x + 1) * GRID_SIZE as i32) - BERG_MAX_SIZE as i32) as f32;
+            let y_1 = (ice.position.y - ice.size as f32) < ((grid_y * GRID_SIZE as i32) + BERG_MAX_SIZE as i32) as f32;
+            let y_2 = (ice.position.y + ice.size as f32) > (((grid_y + 1) * GRID_SIZE as i32) - BERG_MAX_SIZE as i32) as f32;
 
             if x_1 {
                 let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y).unwrap();
