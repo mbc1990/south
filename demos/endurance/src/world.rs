@@ -395,6 +395,10 @@ impl World {
         */
     }
 
+    pub fn get_offset(&self) -> Vector {
+        return self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
+    }
+
     pub fn draw(&self, canvas: &mut WindowCanvas) {
         let offset = self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
         for berg in &self.ices {

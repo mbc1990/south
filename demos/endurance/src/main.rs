@@ -27,7 +27,7 @@ pub const BERG_MIN_SIZE: u32 = 10;
 pub const BERG_MAX_SIZE: u32 = 200;
 pub const ICE_DECEL_FACTOR: f32 = 0.99;
 pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";
-
+pub const DEBUG_MODE: bool = true;
 pub const GRID_SIZE: u32 = 2 * BERG_MAX_SIZE + 10;
 
 fn main() -> Result<(), String> {
@@ -67,10 +67,12 @@ fn main() -> Result<(), String> {
             thread::sleep(time::Duration::from_millis((frame_length - elapsed.as_millis() as f32) as u64));
         }
 
-        hud.draw_fps(&mut canvas, 1000.0 / frame_start.elapsed().as_millis() as f32);
+        if DEBUG_MODE {
+            hud.draw_fps(&mut canvas, 1000.0 / frame_start.elapsed().as_millis() as f32);
+            hud.draw_collision_grid(&mut canvas, world.get_offset());
+        }
         canvas.present();
     }
-
     Ok(())
 }
 
