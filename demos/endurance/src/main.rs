@@ -27,7 +27,7 @@ pub const BERG_MIN_SIZE: u32 = 10;
 pub const BERG_MAX_SIZE: u32 = 200;
 pub const ICE_DECEL_FACTOR: f32 = 0.99;
 pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";
-pub const DEBUG_MODE: bool = true;
+pub const DEBUG_MODE: bool = false;
 pub const GRID_SIZE: u32 = 2 * BERG_MAX_SIZE + 10;
 
 fn main() -> Result<(), String> {

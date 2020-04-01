@@ -77,8 +77,18 @@ impl Ice {
     }
 
     pub fn calc_grid(&self) -> (i32, i32) {
-        let grid_x = (self.position.x / GRID_SIZE as f32) as i32;
-        let grid_y = (self.position.y / GRID_SIZE as f32) as i32;
+        let mut grid_x = (self.position.x / GRID_SIZE as f32) as i32;
+        let mut grid_y = (self.position.y / GRID_SIZE as f32) as i32;
+
+        // Offset grid regions of negative positions due to integer division giving region 0
+        // when a number x i -1.0 < x < 1.0
+        // There's probably a more elegant way of doing this
+        if self.position.x < 0.0 {
+            grid_x -= 1;
+        }
+        if self.position.y < 0.0 {
+            grid_y -= 1;
+        }
         return (grid_x, grid_y);
     }
 }
@@ -121,7 +131,18 @@ impl PhysicsElement for Ice {
             inner_ys.push((p1.y + self.position.y - offset.y) as i16);
         }
         if DEBUG_MODE {
-            canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
+            let (grid_x, grid_y) = self.calc_grid();
+            //
+            // calc_grid gives the wrong answer for some bergs in this example
+            // if grid_x == 1 && grid_y == 0 {
+            //
+
+            if grid_x == 1 && grid_y == -1 {
+                println!("{:}, {:}", self.position.x, self.position.y);
+                canvas.polygon(&xs, &ys, Color::RGB(255, 0, 0));
+            } else {
+                canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
+            }
         } else {
             canvas.filled_polygon(&xs, &ys, Color::RGB(192, 234, 242));
             canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
