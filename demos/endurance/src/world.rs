@@ -47,7 +47,8 @@ impl World {
     }
     pub fn key_s(&mut self) {
         let dir = Vector{x:0.0, y:1.0};
-        self.boat.direction = self.boat.direction.add(&dir.mul(0.1));
+        // TODO: Constants for keyboard input magic numbers
+        self.boat.direction = self.boat.direction.add(&dir.mul(0.5));
     }
     pub fn key_d(&mut self) {
         let dir = Vector{x:1.0, y:0.0};
@@ -60,13 +61,13 @@ impl World {
         while num_bergs > 0 {
             let berg_size = rng.gen_range(BERG_MIN_SIZE, BERG_MAX_SIZE);
             let x = rng.gen_range(berg_size + margin, self.size_x - (berg_size + margin));
-            let y = rng.gen_range(-1 * self.size_y as i32 *4, self.size_y as i32 );
+            let y = rng.gen_range(-1 * self.size_y as i32, self.size_y as i32 );
 
             // Debugging, randomly pick a direction
-            let dir_x = rng.gen_range(0.0,1.0);
-            let dir_y = rng.gen_range(0.0,1.0);
-            let vel = rng.gen_range(1.0, 10.0);
-            let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:dir_x, y:dir_y}, berg_size);
+            let dir_x = rng.gen_range(-1.0,1.0);
+            let dir_y = rng.gen_range(-1.0,1.0);
+            let vel = rng.gen_range(0.0, 1.0);
+            let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:dir_x, y:dir_y}.mul(vel), berg_size);
 
             // let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:0.0, y:0.0}, berg_size);
             let collisions = self.find_collisions(&berg);
@@ -84,16 +85,15 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-
-        // TODO: This reproduces a failed collision detection
-        self.ices.push(Ice::new(Vector{x: 400.0, y: 200.0}, Vector{x:10.0, y: 0.0}.mul(1.0), 100));
-        self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
-        self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
+        self.ices.push(Ice::new(Vector{x: 800.0, y: 100.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
+        // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
+        // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }
 
 
     // Returns copies of all icebergs that intersect with this one
     // Currently assumes all bergs are circles, which will need to be fixed
+    // TODO: only used in init_with_random_ice
     fn find_collisions<S: PhysicsElement>(&self, ice: &S) -> Vec<Box<dyn PhysicsElement>> {
         let mut collisions: Vec<Box<dyn PhysicsElement>> = Vec::new();
         for other_ice in self.ices.iter() {
@@ -107,20 +107,41 @@ impl World {
     }
 
     fn find_boat_collisions(&self, ices: &Vec<Ice>) -> Vec<Ice> {
-
         let mut collisions = Vec::new();
         for other_ice in ices.iter() {
+
+            let boat_pos = self.boat.get_position();
+
             // Check each of the circles that make up the boat
-            if &other_ice.position != &self.boat.get_position() && euc_distance(&other_ice.position, &self.boat.get_position()) < (other_ice.get_size() + self.boat.get_size() as u32) as f32 {
-                // collisions.push(Box::new(ice.clone()));
+            // Bow
+            let bow_circle_pos = Vector{x:boat_pos.x, y: boat_pos.y - (2.0*self.boat.size as f32 + self.boat.size as f32 / 4.0)};
+            let dist = euc_distance(&other_ice.position, &bow_circle_pos);
+            if dist < (other_ice.get_size() as f32 + (self.boat.size as f32 / 4.0))  {
                 collisions.push(other_ice.clone());
                 continue;
             }
 
-            // TODO: front and back circles
+            // Mid deck
+            let front_circle_pos = Vector{x:boat_pos.x, y: boat_pos.y - (self.boat.size as f32 + self.boat.size as f32 / 2.0)};
+            if euc_distance(&other_ice.position, &front_circle_pos) < (other_ice.get_size() as f32 + (self.boat.size as f32 / 2.0)) {
+                collisions.push(other_ice.clone());
+                continue;
+            }
+
+            // Center
+            if &other_ice.position != &self.boat.get_position() && euc_distance(&other_ice.position, &self.boat.get_position()) < (other_ice.get_size() + self.boat.get_size() as u32) as f32 {
+                collisions.push(other_ice.clone());
+                continue;
+            }
+
+            // Rear
+            let rear_circle_pos = Vector{x:boat_pos.x, y: boat_pos.y + (self.boat.size as f32 + self.boat.size as f32 / 2.0)};
+            if euc_distance(&other_ice.position, &rear_circle_pos) < (other_ice.get_size() as f32 + (self.boat.size as f32 / 2.0)) {
+                collisions.push(other_ice.clone());
+                continue;
+            }
 
         }
-
         return collisions;
     }
 
@@ -158,7 +179,6 @@ impl World {
 
     // Compares line segments making up bergs to see if they actually interact
     fn is_real_collision(ice_a: &Ice, ice_b: &Ice) -> bool {
-        // return true;
         for i in 0..ice_a.perimeter.len() - 1 {
             for k in 0..ice_b.perimeter.len() - 1 {
                 let l1_p1 = ice_a.position.add(ice_a.perimeter.get(i).unwrap());
@@ -258,6 +278,7 @@ impl World {
 
         // Boat collisions
         let boat_collisions = self.find_boat_collisions(&self.ices);
+        println!("Boat collisions: {:?}", boat_collisions.len());
         for collision in boat_collisions {
             self.boat.direction = reflect(self.boat.position, self.boat.direction, collision.get_position(), collision.get_direction());
         }
@@ -273,15 +294,15 @@ impl World {
         }
 
 
-        // Update the boat position even if it's not colliding
+        // Update the boat position
         self.boat.position = self.boat.position.add(&self.boat.direction);
 
         let current_ices = self.ices.clone();
+        let mut total_collisions = 0;
         for mut ice in self.ices.iter_mut() {
 
             // If the ice is colliding with the boat, update it
-            // TODO: This needs to check the more complex boat structure
-            // TODO: It also should be behind an abstraction that shares geometry with the debug boat drawing mode?
+            // TODO: Should this be behind an abstraction that shares geometry with the debug boat drawing mode?
             // Center circle
             if euc_distance(&boat_pos_start_tick, &ice.position) < (self.boat.size + ice.size) as f32 {
                 ice.direction = reflect(ice.position, ice.direction, boat_pos_start_tick, boat_dir_start_tick);
@@ -315,7 +336,6 @@ impl World {
             // Grid regions are squares, so the berg can be colliding with objects in up to three
             // more grid regions adjacent to the one the center of the berg is in.
             // THIS IS TRUE ONLY WHEN THE GRID SIZE IS GREATER THAN 2 * MAX_BERG_SIZE
-            // TODO: Also check adjacent corners
             // The bounds here are a little tricky. Our ice might be completely within its grid, but collide with
             // another berg at the edge of an adjacent grid
             let x_1 = (ice.position.x - ice.size as f32) < ((grid_x * GRID_SIZE as i32) + BERG_MAX_SIZE as i32) as f32;
@@ -366,16 +386,22 @@ impl World {
 
             // Collisions from circular bounding box
             let collisions = World::find_collisions_2(&possible_collisions, &ice);
-
+            total_collisions += collisions.len();
             for collision in collisions {
 
                 // Don't collide with yourself
+                // TODO: Use uuid instead of position
                 if collision.position.x == ice.position.x && collision.position.y == ice.position.y {
                     continue;
                 }
 
                 if (World::is_real_collision(&ice, &collision)) {
+                    let pre_reflection = ice.direction.clone();
                     ice.direction = reflect(ice.position, ice.direction, collision.position, collision.direction);
+                    // Hack - Give the berg a small boost
+                    // TODO: We probably don't want to use this since it produces a lot of velocity in close quarters
+                    // ice.direction = ice.direction.mul(1.020);
+                    // println!("Reflecting {:?} to {:?}", pre_reflection, ice.direction);
                 }
             }
 
@@ -383,14 +409,7 @@ impl World {
             ice.direction = ice.direction.mul(ICE_DECEL_FACTOR);
             ice.position = ice.position.add(&ice.direction);
         }
-
-
-        // Hack - push all bergs still colliding with the boat away
-        for mut ice in self.ices.iter_mut() {
-            while euc_distance(&boat_pos_start_tick, &ice.position) < (self.boat.size + ice.size) as f32 {
-                ice.position = ice.position.add(&boat_dir_start_tick);
-            }
-        }
+        println!("Total collisions: {:}", total_collisions);
     }
 
     pub fn get_offset(&self) -> Vector {

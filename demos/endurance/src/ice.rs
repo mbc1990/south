@@ -132,17 +132,16 @@ impl PhysicsElement for Ice {
         }
         if DEBUG_MODE {
             let (grid_x, grid_y) = self.calc_grid();
-            //
-            // calc_grid gives the wrong answer for some bergs in this example
-            // if grid_x == 1 && grid_y == 0 {
-            //
-
+            /*
+            // Debugging - color one grid region differently
             if grid_x == 1 && grid_y == -1 {
                 println!("{:}, {:}", self.position.x, self.position.y);
                 canvas.polygon(&xs, &ys, Color::RGB(255, 0, 0));
             } else {
                 canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
             }
+            */
+            canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
         } else {
             canvas.filled_polygon(&xs, &ys, Color::RGB(192, 234, 242));
             canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
