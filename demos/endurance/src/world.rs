@@ -4,7 +4,7 @@ use crate::physics_element::PhysicsElement;
 use crate::vector::{Vector};
 use sdl2::render::{WindowCanvas};
 use rand::Rng;
-use crate::{BOAT_SIZE, ICE_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE, GRID_SIZE, WIDTH, HEIGHT, DEBUG_MODE};
+use crate::{BOAT_SIZE, ICE_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE, GRID_SIZE, WIDTH, HEIGHT, DEBUG_MODE, BOAT_ACCELERATION};
 use crate::keyboard_state::KeyboardState;
 use std::collections::HashMap;
 use core::cmp;
@@ -39,20 +39,20 @@ impl World {
 
     pub fn key_w(&mut self) {
         let dir = Vector{x:0.0, y:-1.0};
-        self.boat.direction = self.boat.direction.add(&dir);
+        self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
     }
     pub fn key_a(&mut self) {
         let dir = Vector{x:-1.0, y:0.0};
-        self.boat.direction = self.boat.direction.add(&dir.mul(0.5));
+        self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
     }
     pub fn key_s(&mut self) {
         let dir = Vector{x:0.0, y:1.0};
         // TODO: Constants for keyboard input magic numbers
-        self.boat.direction = self.boat.direction.add(&dir.mul(0.5));
+        self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
     }
     pub fn key_d(&mut self) {
         let dir = Vector{x:1.0, y:0.0};
-        self.boat.direction = self.boat.direction.add(&dir.mul(0.5));
+        self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
     }
 
     pub fn init_with_random_ice(&mut self, mut num_bergs: i32) {
