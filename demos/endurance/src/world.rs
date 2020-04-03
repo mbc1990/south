@@ -107,56 +107,16 @@ impl World {
         return collisions;
     }
 
-    // TODO: Should use boat's geometry to precisely identify collisions
-    // TODO: (currently this uses circle collision logic)
     fn find_boat_collisions(&self, ices: &Vec<Ice>) -> Vec<Ice> {
         let mut collisions = Vec::new();
         let boat_pos = self.boat.get_position();
         for other_ice in ices.iter() {
 
-            if self.is_real_collision_with_boat(other_ice) {
+            if World::is_real_collision_with_boat(&self.boat, other_ice) {
                 collisions.push(other_ice.clone());
             }
 
-            // Check each of the circles that make up the boat
-            // Bow
-            /*
-            let bow_circle_pos = Vector{x:boat_pos.x, y: boat_pos.y - (2.0*self.boat.size as f32 + self.boat.size as f32 / 4.0)};
-            let dist = euc_distance(&other_ice.position, &bow_circle_pos);
-            if dist < (other_ice.get_size() as f32 + (self.boat.size as f32 / 4.0))  {
-                collisions.push(other_ice.clone());
-                continue;
-            }
-
-            // Mid deck
-            let front_circle_pos = Vector{x:boat_pos.x, y: boat_pos.y - (self.boat.size as f32 + self.boat.size as f32 / 2.0)};
-            if euc_distance(&other_ice.position, &front_circle_pos) < (other_ice.get_size() as f32 + (self.boat.size as f32 / 2.0)) {
-                collisions.push(other_ice.clone());
-                continue;
-            }
-
-            // Center
-            if &other_ice.position != &self.boat.get_position() && euc_distance(&other_ice.position, &self.boat.get_position()) < (other_ice.get_size() + self.boat.get_size() as u32) as f32 {
-                collisions.push(other_ice.clone());
-                continue;
-            }
-
-            // Rear
-            let rear_circle_pos = Vector{x:boat_pos.x, y: boat_pos.y + (self.boat.size as f32 + self.boat.size as f32 / 2.0)};
-            if euc_distance(&other_ice.position, &rear_circle_pos) < (other_ice.get_size() as f32 + (self.boat.size as f32 / 2.0)) {
-                collisions.push(other_ice.clone());
-                continue;
-            }
-            */
         }
-
-        // TODO: For each collision, check if intersects with boat
-        /*
-        let mut exact_collisions = Vec::new();
-        for ice in collisions.iter() {
-            // TODO: If ice+boat collide, add to exact collisions
-        }
-        */
 
         return collisions;
     }
@@ -192,16 +152,14 @@ impl World {
         return false;
     }
 
-    // TODO: Shares logic with is_real_collision
-    // TODO: The whole physicselement & collision detection stuff needs to be refactored somehow
-    fn is_real_collision_with_boat(&self, ice: &Ice) -> bool {
+    fn is_real_collision_with_boat(boat: &Boat, ice: &Ice) -> bool {
         for i in 0..ice.perimeter.len() - 1 {
-            for k in 0..self.boat.perimeter.len() - 1 {
+            for k in 0..boat.perimeter.len() - 1 {
                 let l1_p1 = ice.position.add(ice.perimeter.get(i).unwrap());
                 let l1_p2 = ice.position.add(ice.perimeter.get(i + 1).unwrap());
 
-                let l2_p1 = self.boat.position.add(self.boat.perimeter.get(k).unwrap());
-                let l2_p2 = self.boat.position.add(self.boat.perimeter.get(k + 1).unwrap());
+                let l2_p1 = boat.position.add(boat.perimeter.get(k).unwrap());
+                let l2_p2 = boat.position.add(boat.perimeter.get(k + 1).unwrap());
 
                 if World::lines_intersect(l1_p1, l1_p2, l2_p1, l2_p2) {
                     return true;
@@ -307,9 +265,6 @@ impl World {
         let boat_pos_start_tick = self.boat.position.clone();
         let boat_dir_start_tick = self.boat.direction.clone();
 
-        // let dir = Vector{x:0.0, y:-1.0};
-        // self.boat.direction = self.boat.direction.add(&dir);
-
         // Boat collisions
         let boat_collisions = self.find_boat_collisions(&self.ices);
         println!("Boat collisions: {:?}", boat_collisions.len());
@@ -321,7 +276,6 @@ impl World {
         let mut grid = HashMap::new();
         for ice in self.ices.iter() {
             let (grid_x, grid_y) = ice.calc_grid();
-            // println!("Berg pos {:?} grid: {:?}, {:?}", ice.get_position(), grid_x, grid_y);
             let mut col = grid.entry(grid_x).or_insert(HashMap::new());
             let mut row = col.entry(grid_y).or_insert(Vec::new());
             row.push(ice.clone());
@@ -333,38 +287,14 @@ impl World {
 
         let current_ices = self.ices.clone();
         let mut total_collisions = 0;
-        for mut ice in self.ices.iter_mut() {
+        let ices = self.ices.iter_mut();
+        for ice in ices {
 
-            // TODO: this really shouldnt even be on self. maybe should just spend time on refactoring instead of digging this hole even deeper...
-            if self.is_real_collision_with_boat(ice) {
-                ice.direction = reflect(ice.position, ice.direction, boat_pos_start_tick, boat_dir_start_tick);
+            let temp_dir = ice.direction.clone();
+            let temp_pos = ice.position.clone();
+            if World::is_real_collision_with_boat(&self.boat, &ice) {
+                ice.direction = reflect(temp_pos, temp_dir, boat_pos_start_tick, boat_dir_start_tick);
             }
-            // If the ice is colliding with the boat, update it
-            // TODO: Should this be behind an abstraction that shares geometry with the debug boat drawing mode?
-            // Center circle
-            /*
-            if euc_distance(&boat_pos_start_tick, &ice.position) < (self.boat.size + ice.size) as f32 {
-                ice.direction = reflect(ice.position, ice.direction, boat_pos_start_tick, boat_dir_start_tick);
-            }
-
-            // Front circle
-            let front_pos = boat_pos_start_tick.add(&Vector{x:0.0, y: -1.0 * (self.boat.size as f32 + self.boat.size as f32/ 2.0)});
-            if euc_distance(&front_pos, &ice.position) < ((self.boat.size as f32/ 2.0)+ ice.size as f32) as f32 {
-                ice.direction = reflect(ice.position, ice.direction, front_pos, boat_dir_start_tick);
-            }
-
-            // Bow circle
-            let bow_pos = boat_pos_start_tick.add(&Vector{x:0.0, y: -1.0 * (2.0 * self.boat.size as f32 + self.boat.size as f32/ 4.0)});
-            if euc_distance(&bow_pos, &ice.position) < ((self.boat.size as f32/ 4.0)+ ice.size as f32) as f32 {
-                ice.direction = reflect(ice.position, ice.direction, bow_pos, boat_dir_start_tick);
-            }
-
-            // Rear circle
-            let front_pos = boat_pos_start_tick.sub(&Vector{x:0.0, y: -1.0 * (self.boat.size as f32 + self.boat.size as f32/ 2.0)});
-            if euc_distance(&front_pos, &ice.position) < ((self.boat.size as f32/ 2.0)+ ice.size as f32) as f32 {
-                ice.direction = reflect(ice.position, ice.direction, front_pos, boat_dir_start_tick);
-            }
-            */
 
             let (grid_x, grid_y) = ice.calc_grid();
 
@@ -438,10 +368,6 @@ impl World {
                 if (World::is_real_collision(&ice, &collision)) {
                     let pre_reflection = ice.direction.clone();
                     ice.direction = reflect(ice.position, ice.direction, collision.position, collision.direction);
-                    // Hack - Give the berg a small boost
-                    // TODO: We probably don't want to use this since it produces a lot of velocity in close quarters
-                    // ice.direction = ice.direction.mul(1.020);
-                    // println!("Reflecting {:?} to {:?}", pre_reflection, ice.direction);
                 }
             }
 
