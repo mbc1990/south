@@ -37,6 +37,7 @@ impl World {
         World{size_x, size_y, ices: ice, boat: boat}
     }
 
+    // TODO: Next up for the boat, make these controls more rudder-like (boat rotates)
     pub fn key_w(&mut self) {
         let dir = Vector{x:0.0, y:-1.0};
         self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
@@ -106,14 +107,20 @@ impl World {
         return collisions;
     }
 
+    // TODO: Should use boat's geometry to precisely identify collisions
+    // TODO: (currently this uses circle collision logic)
     fn find_boat_collisions(&self, ices: &Vec<Ice>) -> Vec<Ice> {
         let mut collisions = Vec::new();
+        let boat_pos = self.boat.get_position();
         for other_ice in ices.iter() {
 
-            let boat_pos = self.boat.get_position();
+            if self.is_real_collision_with_boat(other_ice) {
+                collisions.push(other_ice.clone());
+            }
 
             // Check each of the circles that make up the boat
             // Bow
+            /*
             let bow_circle_pos = Vector{x:boat_pos.x, y: boat_pos.y - (2.0*self.boat.size as f32 + self.boat.size as f32 / 4.0)};
             let dist = euc_distance(&other_ice.position, &bow_circle_pos);
             if dist < (other_ice.get_size() as f32 + (self.boat.size as f32 / 4.0))  {
@@ -140,8 +147,17 @@ impl World {
                 collisions.push(other_ice.clone());
                 continue;
             }
-
+            */
         }
+
+        // TODO: For each collision, check if intersects with boat
+        /*
+        let mut exact_collisions = Vec::new();
+        for ice in collisions.iter() {
+            // TODO: If ice+boat collide, add to exact collisions
+        }
+        */
+
         return collisions;
     }
 
@@ -176,6 +192,24 @@ impl World {
         return false;
     }
 
+    // TODO: Shares logic with is_real_collision
+    // TODO: The whole physicselement & collision detection stuff needs to be refactored somehow
+    fn is_real_collision_with_boat(&self, ice: &Ice) -> bool {
+        for i in 0..ice.perimeter.len() - 1 {
+            for k in 0..self.boat.perimeter.len() - 1 {
+                let l1_p1 = ice.position.add(ice.perimeter.get(i).unwrap());
+                let l1_p2 = ice.position.add(ice.perimeter.get(i + 1).unwrap());
+
+                let l2_p1 = self.boat.position.add(self.boat.perimeter.get(k).unwrap());
+                let l2_p2 = self.boat.position.add(self.boat.perimeter.get(k + 1).unwrap());
+
+                if World::lines_intersect(l1_p1, l1_p2, l2_p1, l2_p2) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     // Compares line segments making up bergs to see if they actually interact
     fn is_real_collision(ice_a: &Ice, ice_b: &Ice) -> bool {
@@ -301,9 +335,14 @@ impl World {
         let mut total_collisions = 0;
         for mut ice in self.ices.iter_mut() {
 
+            // TODO: this really shouldnt even be on self. maybe should just spend time on refactoring instead of digging this hole even deeper...
+            if self.is_real_collision_with_boat(ice) {
+                ice.direction = reflect(ice.position, ice.direction, boat_pos_start_tick, boat_dir_start_tick);
+            }
             // If the ice is colliding with the boat, update it
             // TODO: Should this be behind an abstraction that shares geometry with the debug boat drawing mode?
             // Center circle
+            /*
             if euc_distance(&boat_pos_start_tick, &ice.position) < (self.boat.size + ice.size) as f32 {
                 ice.direction = reflect(ice.position, ice.direction, boat_pos_start_tick, boat_dir_start_tick);
             }
@@ -325,6 +364,7 @@ impl World {
             if euc_distance(&front_pos, &ice.position) < ((self.boat.size as f32/ 2.0)+ ice.size as f32) as f32 {
                 ice.direction = reflect(ice.position, ice.direction, front_pos, boat_dir_start_tick);
             }
+            */
 
             let (grid_x, grid_y) = ice.calc_grid();
 

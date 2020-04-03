@@ -13,13 +13,98 @@ pub struct Boat {
 
     pub position: Vector,
 
-    pub size: u32
+    pub size: u32,
+
+    pub perimeter: Vec<Vector>,
 }
 
 impl Boat {
 
     pub fn new(position: Vector , size: u32) -> Boat {
-        return Boat{direction: Vector{x: 0.0, y: -0.0}, position, size};
+        let mut boat = Boat{direction: Vector{x: 0.0, y: -0.0}, position, size, perimeter: vec![] };
+        boat.init_perimeter();
+        return boat;
+    }
+
+    fn init_perimeter(&mut self) {
+        // TODO: Store the non-offset perimeter points in here
+        // TODO: Use them when checking for exact collisions
+
+        let l1_p1_x  = 0.0 - (self.size * 1) as f32;
+        let l1_p1_y  = 0.0 - (self.size * 1) as f32;
+        self.perimeter.push(Vector{x: l1_p1_x, y: l1_p1_y});
+
+        let l1_p2_x = 0.0;
+        let l1_p2_y = (self.size * 3) as f32;
+        self.perimeter.push(Vector{x: l1_p2_x, y: l1_p2_y});
+
+        let l2_p1_x  = (self.size * 1) as f32;
+        let l2_p1_y  = 0.0 - (self.size * 1) as f32;
+        self.perimeter.push(Vector{x: l2_p1_x, y: l2_p1_y});
+
+        let l3_p2_x = (self.size * 1) as f32;
+        let l3_p2_y = (self.size * 1) as f32;
+        self.perimeter.push(Vector{x: l3_p2_x, y: l3_p2_y});
+
+        let l5_p2_x = (self.size / 2) as f32;
+        let l5_p2_y = (self.size * 2) as f32;
+        self.perimeter.push(Vector{x: l5_p2_x, y: l5_p2_y});
+
+        let l7_p1_x = 0.0 - (self.size / 2) as f32;
+        let l7_p1_y = (self.size * 2) as f32;
+        self.perimeter.push(Vector{x: l7_p1_x, y: l7_p1_y});
+
+        let l6_p1_x  = 0.0 - (self.size * 1) as f32;
+        let l6_p1_y  = 0.0 + (self.size * 1) as f32;
+        self.perimeter.push(Vector{x: l6_p1_x, y: l6_p1_y});
+
+        /*
+        let mut xs: Vec<i16> = Vec::new();
+        let mut ys: Vec<i16> = Vec::new();
+
+        // Port bow
+        let l1_p1_x  = offset_position.x - (self.size * 1) as f32;
+        let l1_p1_y  = offset_position.y -  (self.size * 1) as f32;
+        xs.push(l1_p1_x as i16);
+        ys.push(l1_p1_y as i16);
+
+        let l1_p2_x = offset_position.x;
+        let l1_p2_y = offset_position.y - (self.size * 3) as f32;
+        xs.push(l1_p2_x as i16);
+        ys.push(l1_p2_y as i16);
+
+        // Starboard bow
+        let l2_p1_x  = offset_position.x + (self.size * 1) as f32;
+        let l2_p1_y  = offset_position.y -  (self.size * 1) as f32;
+        xs.push(l2_p1_x as i16);
+        ys.push(l2_p1_y as i16);
+
+        // Starboard side
+        let l3_p2_x = offset_position.x + (self.size * 1) as f32;
+        let l3_p2_y = offset_position.y + (self.size * 1) as f32;
+        xs.push(l3_p2_x as i16);
+        ys.push(l3_p2_y as i16);
+
+        // Starboard rear
+        let l5_p2_x = offset_position.x + (self.size / 2) as f32;
+        let l5_p2_y = offset_position.y + (self.size * 2) as f32;
+        xs.push(l5_p2_x as i16);
+        ys.push(l5_p2_y as i16);
+
+        // Rear
+        let l7_p1_x = offset_position.x - (self.size / 2) as f32;
+        let l7_p1_y = offset_position.y + (self.size * 2) as f32;
+        xs.push(l7_p1_x as i16);
+        ys.push(l7_p1_y as i16);
+
+        // Port rear
+        let l6_p1_x  = offset_position.x - (self.size * 1) as f32;
+        let l6_p1_y  = offset_position.y + (self.size * 1) as f32;
+        xs.push(l6_p1_x as i16);
+        ys.push(l6_p1_y as i16);
+        canvas.filled_polygon(&xs, &ys, Color::RGB(213, 183, 143));
+        */
+
     }
 
     // TODO: Is there a way to fill the boat polygon without using fill_rect?
@@ -111,7 +196,6 @@ impl Boat {
         let l10_p2_y = offset_position.y + (self.size + (self.size / 2)) as f32;
         let l10_p2 = Point::new(l10_p2_x as i32, l10_p2_y as i32);
         canvas.draw_line(l10_p1, l10_p2);
-
     }
 
 }
