@@ -29,6 +29,25 @@ fn reflect(subject_pos: Vector, subject_dir: Vector, object_pos: Vector, object_
     return new_direction;
 }
 
+// TODO: We need to include the object (boat perimeter segment) velocity somehow
+fn reflect_line(subject_pos: Vector, subject_dir: Vector, object_p1: Vector, object_p2: Vector) -> Vector {
+
+    // Find the normals of the line segment we're reflecting off of
+    let dx = object_p2.x - object_p1.x;
+    let dy = object_p2.y - object_p2.y;
+    let normal_1 = Vector{x: -1.0 * dy, y: dx}.norm();
+    let normal_2 = Vector{x: dy, y: -1.0 * dx}.norm();
+
+    let a = subject_dir.norm();
+    let proj = normal_1.dot(&a);
+
+
+
+    // TODO: Need a normal for the line segment
+    // TODO: otherwise, how would we know what direction the berg is coming from
+    return Vector{x:0.0, y:0.0};
+}
+
 impl World {
     pub fn new(size_x: u32, size_y: u32) -> World {
         // Populate the world with some randomly positioned ice bergs
@@ -112,6 +131,7 @@ impl World {
         let boat_pos = self.boat.get_position();
         for other_ice in ices.iter() {
 
+            // TODO: What to do about this...
             if World::is_real_collision_with_boat(&self.boat, other_ice) {
                 collisions.push(other_ice.clone());
             }
@@ -152,7 +172,12 @@ impl World {
         return false;
     }
 
+    // TODO: WIP, make compiler happy, will be removed soon
     fn is_real_collision_with_boat(boat: &Boat, ice: &Ice) -> bool {
+        return false;
+    }
+
+    fn get_boat_collision(boat: &Boat, ice: &Ice) -> Option<(Vector, Vector)> {
         for i in 0..ice.perimeter.len() - 1 {
             for k in 0..boat.perimeter.len() - 1 {
                 let l1_p1 = ice.position.add(ice.perimeter.get(i).unwrap());
@@ -162,11 +187,11 @@ impl World {
                 let l2_p2 = boat.position.add(boat.perimeter.get(k + 1).unwrap());
 
                 if World::lines_intersect(l1_p1, l1_p2, l2_p1, l2_p2) {
-                    return true;
+                    return Some((l2_p1, l2_p2));
                 }
             }
         }
-        return false;
+        return None;
     }
 
     // Compares line segments making up bergs to see if they actually interact
@@ -269,6 +294,7 @@ impl World {
         let boat_collisions = self.find_boat_collisions(&self.ices);
         println!("Boat collisions: {:?}", boat_collisions.len());
         for collision in boat_collisions {
+            // TODO: This is the main problem right now. The boat is treated as the single center circle
             self.boat.direction = reflect(self.boat.position, self.boat.direction, collision.get_position(), collision.get_direction());
         }
 
@@ -292,9 +318,27 @@ impl World {
 
             let temp_dir = ice.direction.clone();
             let temp_pos = ice.position.clone();
+
+            match World::get_boat_collision(&self.boat, &ice) {
+                Some((p1, p2)) => {
+                    println!("Reflecting berg off boat line");
+                    // ice.direction = reflect_line(temp_pos, temp_dir, p1, p2);
+
+                    // TODO: Temporary hack because I don't feel like working on the (correct) collision resolution logic
+                    ice.direction = self.boat.direction.mul(1.5);
+                },
+                None => {
+
+                }
+            }
+            /*
             if World::is_real_collision_with_boat(&self.boat, &ice) {
+
+                // TODO: Boat collision resolution problem
+                // TODO: This should reflect off the surface it collided with
                 ice.direction = reflect(temp_pos, temp_dir, boat_pos_start_tick, boat_dir_start_tick);
             }
+            */
 
             let (grid_x, grid_y) = ice.calc_grid();
 
