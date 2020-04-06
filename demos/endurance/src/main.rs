@@ -12,6 +12,7 @@ use sdl2::Sdl;
 mod world;
 mod ice;
 mod boat;
+mod geometry;
 mod vector;
 mod keyboard_state;
 mod input_manager;
