@@ -97,35 +97,12 @@ impl World {
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }
 
-
-    fn find_boat_collisions(&self, ices: &Vec<Ice>) -> Vec<Ice> {
-        let mut collisions = Vec::new();
-        let boat_pos = self.boat.get_position();
-        for other_ice in ices.iter() {
-
-            // TODO: What to do about this...
-            if World::is_real_collision_with_boat(&self.boat, other_ice) {
-                collisions.push(other_ice.clone());
-            }
-
-        }
-
-        return collisions;
-    }
-
-    // same thing as the other one
     fn find_collisions<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
         let collisions = ices.iter()
             .filter(|other_ice| euc_distance(&other_ice.position, &ice.position) < (other_ice.size + ice.size) as f32)
             .filter(|other_ice| &other_ice.position != &ice.position)
             .collect();
         return collisions;
-    }
-
-
-    // TODO: WIP, make compiler happy, will be removed soon
-    fn is_real_collision_with_boat(boat: &Boat, ice: &Ice) -> bool {
-        return false;
     }
 
     fn get_boat_collision(boat: &Boat, ice: &Ice) -> Option<(Vector, Vector)> {
@@ -162,7 +139,6 @@ impl World {
         }
         return false;
     }
-
 
 
     fn respond_to_input(&mut self, keyboard_state: &KeyboardState) {
@@ -206,20 +182,6 @@ impl World {
 
         self.respond_to_input(keyboard_state);
 
-        let boat_pos_start_tick = self.boat.position.clone();
-        let boat_dir_start_tick = self.boat.direction.clone();
-
-        // Boat collisions
-        // TODO: Remove this old boat collision logic?
-        /*
-        let boat_collisions = self.find_boat_collisions(&self.ices);
-        println!("Boat collisions: {:?}", boat_collisions.len());
-        for collision in boat_collisions {
-            // TODO: Hack because the boat-ice collision physics still needs work
-            self.boat.direction = reflect(self.boat.position, self.boat.direction, collision.get_position(), collision.get_direction());
-        }
-        */
-
         // Each tick, compute the current grid position of each iceberg
         let mut grid = HashMap::new();
         for ice in self.ices.iter() {
@@ -228,7 +190,6 @@ impl World {
             let mut row = col.entry(grid_y).or_insert(Vec::new());
             row.push(ice.clone());
         }
-
 
         // Update the boat position
         self.boat.position = self.boat.position.add(&self.boat.direction);
@@ -253,14 +214,6 @@ impl World {
 
                 }
             }
-            /*
-            if World::is_real_collision_with_boat(&self.boat, &ice) {
-
-                // TODO: Boat collision resolution problem
-                // TODO: This should reflect off the surface it collided with
-                ice.direction = reflect(temp_pos, temp_dir, boat_pos_start_tick, boat_dir_start_tick);
-            }
-            */
 
             let (grid_x, grid_y) = ice.calc_grid();
 
