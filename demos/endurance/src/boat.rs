@@ -55,7 +55,7 @@ impl Boat {
         self.perimeter.push(Vector{x: l6_p1_x, y: l6_p1_y});
     }
 
-    pub fn draw_offset_detail(&self, canvas: &mut WindowCanvas, offset: &Vector) {
+    pub fn draw(&self, canvas: &mut WindowCanvas, offset: &Vector) {
         canvas.set_draw_color(Color::RGB(213, 183, 143));
 
         let offset_position = self.position.sub(offset);
@@ -108,45 +108,6 @@ impl Boat {
         let l10_p2 = Point::new(l10_p2_x as i32, l10_p2_y as i32);
         canvas.draw_line(l10_p1, l10_p2);
     }
-
-    pub fn draw(&self, canvas: &mut WindowCanvas) {
-        canvas.set_draw_color(Color::RGB(213, 183, 143));
-        canvas.fill_rect(Rect::new((self.position.x - (self.size / 2) as f32) as i32, (self.position.y - (self.size / 2) as f32) as i32, self.size, self.size)).unwrap();
-    }
-
-    pub fn draw_offset(&self, canvas: &mut WindowCanvas, offset: &Vector) {
-        canvas.set_draw_color(Color::RGB(213, 183, 143));
-        let offset_center = self.position.sub(offset);
-        // println!("OFfset center: {:?}", offset_center);
-        canvas.fill_rect(Rect::new((offset_center.x - (self.size / 2) as f32) as i32, (offset_center.y - (self.size / 2) as f32) as i32, self.size, self.size)).unwrap();
-    }
-
-    pub fn draw_offset_circ(&self, canvas: &mut WindowCanvas, offset: &Vector) {
-        canvas.set_draw_color(Color::RGB(117, 100, 63));
-
-        let offset_position = self.position.sub(offset);
-
-        // Center circle
-        let point_x = offset_position.x;
-        canvas.circle(point_x as i16, offset_position.y as i16, self.size as i16, Color::RGB(213, 183, 143));
-
-        // Front circle
-        let front_point_x = offset_position.x;
-        let front_point_y = offset_position.y - (self.size as f32 + self.size as f32 / 2.0);
-        canvas.circle(front_point_x as i16, front_point_y as i16, (self.size / 2) as i16, Color::RGB(213, 183, 143));
-
-        // Bow circle
-        let bow_point_x = offset_position.x;
-        let bow_point_y = offset_position.y - ((2.0 * self.size as f32) + (self.size as f32 / 4.0));
-        canvas.circle(bow_point_x as i16, bow_point_y as i16, (self.size / 4) as i16, Color::RGB(213, 183, 143));
-
-        // Rear circle
-        let rear_point_x = offset_position.x;
-        let rear_point_y = offset_position.y + (self.size as f32 + self.size as f32 / 2.0);
-        canvas.circle(rear_point_x as i16, rear_point_y as i16, (self.size / 2) as i16, Color::RGB(213, 183, 143));
-
-    }
-
 
     pub fn get_size(&self) -> u32 {
         return self.size;

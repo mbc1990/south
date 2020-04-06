@@ -9,30 +9,18 @@ use sdl2::gfx::primitives::DrawRenderer;
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
 pub struct Ice {
-
-    // TODO: Rotation, mass (maybe an InteractableElement trait or something)
-
     pub direction: Vector,
-
-    // Center of the berg
-    // pub position: Point,
     pub position: Vector,
-
-
     // Maximum radius of circle underlying iceberg
     pub size: u32,
-
-    // Ordered list of distances from center
-    zig_zags: Vec<u32>,
-
     pub perimeter: Vec<Vector>,
-
     pub inner_perimeter: Vec<Vector>
 }
 
 impl Ice {
 
     pub fn new(position: Vector, direction: Vector, size: u32) -> Ice {
+        // Randomly generated perimeter & inner perimeter
         let mut zig_zags = Vec::new();
         let mut inner_zig_zags = Vec::new();
         let mut rng = rand::thread_rng();
@@ -48,7 +36,7 @@ impl Ice {
 
 
         // Rotate a point around the circle representing the iceberg, changing the radius of the point to create jagged edges
-        // TODO: Simplify math
+        // TODO: Simplify math, or at least remove some of this ridiculous casting
         let mut perimeter  =  Vec::new();
         let mut inner_perimeter  =  Vec::new();
         let point_x = 0;
@@ -72,7 +60,7 @@ impl Ice {
             inner_perimeter.push(Vector{x: r_x as f32, y: r_y as f32 });
         }
 
-        Ice{direction, position, size, zig_zags, perimeter, inner_perimeter}
+        Ice{direction, position, size, perimeter, inner_perimeter}
     }
 
     pub fn calc_grid(&self) -> (i32, i32) {
@@ -91,14 +79,7 @@ impl Ice {
         return (grid_x, grid_y);
     }
 
-    // Draw the ice to the canvas
-    pub fn draw(&self, canvas: &mut WindowCanvas) {
-        self.draw_offset(canvas, &Vector{x:0.0, y:0.0});
-    }
-
-    pub fn draw_offset_circ(&self, _canvas: &mut WindowCanvas, _offset: &Vector) {}
-
-    pub fn draw_offset(&self, canvas: &mut WindowCanvas, offset: &Vector) {
+    pub fn draw(&self, canvas: &mut WindowCanvas, offset: &Vector) {
         // Don't draw if not visible
         let offset_position = self.position.sub(offset);
         let x_min = 0.0 - BERG_MAX_SIZE as f32;
@@ -128,15 +109,6 @@ impl Ice {
         }
         if DEBUG_MODE {
             let (grid_x, grid_y) = self.calc_grid();
-            /*
-            // Debugging - color one grid region differently
-            if grid_x == 1 && grid_y == -1 {
-                println!("{:}, {:}", self.position.x, self.position.y);
-                canvas.polygon(&xs, &ys, Color::RGB(255, 0, 0));
-            } else {
-                canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
-            }
-            */
             canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
         } else {
             canvas.filled_polygon(&xs, &ys, Color::RGB(192, 234, 242));

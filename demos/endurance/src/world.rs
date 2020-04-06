@@ -55,7 +55,7 @@ impl World {
         World{size_x, size_y, ices: ice, boat: boat}
     }
 
-    // TODO: Next up for the boat, make these controls more rudder-like (boat rotates)
+    // TODO: Make these controls more rudder-like (boat rotates)
     pub fn key_w(&mut self) {
         let dir = Vector{x:0.0, y:-1.0};
         self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
@@ -275,12 +275,15 @@ impl World {
         let boat_dir_start_tick = self.boat.direction.clone();
 
         // Boat collisions
+        // TODO: Remove this old boat collision logic?
+        /*
         let boat_collisions = self.find_boat_collisions(&self.ices);
         println!("Boat collisions: {:?}", boat_collisions.len());
         for collision in boat_collisions {
-            // TODO: This is the main problem right now. The boat is treated as the single center circle
+            // TODO: Hack because the boat-ice collision physics still needs work
             self.boat.direction = reflect(self.boat.position, self.boat.direction, collision.get_position(), collision.get_direction());
         }
+        */
 
         // Each tick, compute the current grid position of each iceberg
         let mut grid = HashMap::new();
@@ -413,12 +416,8 @@ impl World {
     pub fn draw(&self, canvas: &mut WindowCanvas) {
         let offset = self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
         for berg in &self.ices {
-            berg.draw_offset(canvas, &offset);
+            berg.draw(canvas, &offset);
         }
-        if DEBUG_MODE {
-            self.boat.draw_offset_circ(canvas, &offset);
-        } else {
-            self.boat.draw_offset_detail(canvas, &offset);
-        }
+        self.boat.draw(canvas, &offset);
     }
 }
