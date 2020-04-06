@@ -10,7 +10,6 @@ use crate::hud::Hud;
 use sdl2::Sdl;
 
 mod world;
-mod physics_element;
 mod ice;
 mod boat;
 mod vector;
@@ -24,7 +23,7 @@ pub const FPS: u32 = 30;
 pub const BOAT_SIZE: u32 = 25;
 pub const NUM_BERGS: i32 = 150;
 pub const BERG_MIN_SIZE: u32 = 10;
-pub const BERG_MAX_SIZE: u32 = 200;
+pub const BERG_MAX_SIZE: u32 = 75;
 pub const ICE_DECEL_FACTOR: f32 = 0.99;
 pub const BOAT_ACCELERATION: f32 = 0.2;
 pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";

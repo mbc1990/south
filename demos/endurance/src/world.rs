@@ -1,6 +1,5 @@
 use crate::ice::{Ice};
 use crate::boat::{Boat};
-use crate::physics_element::PhysicsElement;
 use crate::vector::{Vector};
 use sdl2::render::{WindowCanvas};
 use rand::Rng;
@@ -90,7 +89,7 @@ impl World {
             let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:dir_x, y:dir_y}.mul(vel), berg_size);
 
             // let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:0.0, y:0.0}, berg_size);
-            let collisions = self.find_collisions(&berg);
+            let collisions = World::find_collisions(&self.ices, &berg);
 
             if euc_distance(&self.boat.position, &berg.position) < (self.boat.size * 3 + *&berg.size) as f32 {
                continue;
@@ -111,21 +110,6 @@ impl World {
     }
 
 
-    // Returns copies of all icebergs that intersect with this one
-    // Currently assumes all bergs are circles, which will need to be fixed
-    // TODO: only used in init_with_random_ice
-    fn find_collisions<S: PhysicsElement>(&self, ice: &S) -> Vec<Box<dyn PhysicsElement>> {
-        let mut collisions: Vec<Box<dyn PhysicsElement>> = Vec::new();
-        for other_ice in self.ices.iter() {
-            if &other_ice.position != &ice.get_position() && euc_distance(&other_ice.position, &ice.get_position()) < (other_ice.get_size() + ice.get_size() as u32) as f32 {
-               // collisions.push(Box::new(ice.clone()));
-                collisions.push(Box::new(other_ice.clone()) as Box<dyn PhysicsElement>);
-            }
-
-        }
-        return collisions;
-    }
-
     fn find_boat_collisions(&self, ices: &Vec<Ice>) -> Vec<Ice> {
         let mut collisions = Vec::new();
         let boat_pos = self.boat.get_position();
@@ -142,7 +126,7 @@ impl World {
     }
 
     // same thing as the other one
-    fn find_collisions_2<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
+    fn find_collisions<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
         let collisions = ices.iter()
             .filter(|other_ice| euc_distance(&other_ice.position, &ice.position) < (other_ice.size + ice.size) as f32)
             .filter(|other_ice| &other_ice.position != &ice.position)
@@ -399,7 +383,7 @@ impl World {
             }
 
             // Collisions from circular bounding box
-            let collisions = World::find_collisions_2(&possible_collisions, &ice);
+            let collisions = World::find_collisions(&possible_collisions, &ice);
             total_collisions += collisions.len();
             for collision in collisions {
 

@@ -3,7 +3,6 @@ use sdl2::render::{WindowCanvas};
 use rand::Rng;
 use sdl2::pixels::Color;
 use crate::vector::{Vector};
-use crate::physics_element::PhysicsElement;
 use crate::{GRID_SIZE, HEIGHT, WIDTH, BERG_MIN_SIZE, BERG_MAX_SIZE, DEBUG_MODE};
 use sdl2::gfx::primitives::DrawRenderer;
 
@@ -91,18 +90,15 @@ impl Ice {
         }
         return (grid_x, grid_y);
     }
-}
-
-impl PhysicsElement for Ice {
 
     // Draw the ice to the canvas
-    fn draw(&self, canvas: &mut WindowCanvas) {
+    pub fn draw(&self, canvas: &mut WindowCanvas) {
         self.draw_offset(canvas, &Vector{x:0.0, y:0.0});
     }
 
-    fn draw_offset_circ(&self, _canvas: &mut WindowCanvas, _offset: &Vector) {}
+    pub fn draw_offset_circ(&self, _canvas: &mut WindowCanvas, _offset: &Vector) {}
 
-    fn draw_offset(&self, canvas: &mut WindowCanvas, offset: &Vector) {
+    pub fn draw_offset(&self, canvas: &mut WindowCanvas, offset: &Vector) {
         // Don't draw if not visible
         let offset_position = self.position.sub(offset);
         let x_min = 0.0 - BERG_MAX_SIZE as f32;
@@ -148,16 +144,15 @@ impl PhysicsElement for Ice {
         }
     }
 
-    fn get_size(&self) -> u32 {
+    pub fn get_size(&self) -> u32 {
         return self.size;
     }
 
-    fn get_position(&self) -> Vector {
+    pub fn get_position(&self) -> Vector {
         return self.position;
     }
 
-    fn get_direction(&self) -> Vector {
+    pub fn get_direction(&self) -> Vector {
         return self.direction;
     }
-
 }

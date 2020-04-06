@@ -2,7 +2,6 @@ use sdl2::rect::{Point, Rect};
 use sdl2::render::{WindowCanvas};
 use sdl2::pixels::Color;
 use crate::vector::{Vector};
-use crate::physics_element::{PhysicsElement};
 use sdl2::gfx::primitives::DrawRenderer;
 
 // Represents a discrete piece of ice
@@ -110,23 +109,19 @@ impl Boat {
         canvas.draw_line(l10_p1, l10_p2);
     }
 
-}
-
-impl PhysicsElement for Boat {
-    fn draw(&self, canvas: &mut WindowCanvas) {
+    pub fn draw(&self, canvas: &mut WindowCanvas) {
         canvas.set_draw_color(Color::RGB(213, 183, 143));
         canvas.fill_rect(Rect::new((self.position.x - (self.size / 2) as f32) as i32, (self.position.y - (self.size / 2) as f32) as i32, self.size, self.size)).unwrap();
     }
 
-    // TODO: Sort of weird for this to be on something called PhysicsElement
-    fn draw_offset(&self, canvas: &mut WindowCanvas, offset: &Vector) {
+    pub fn draw_offset(&self, canvas: &mut WindowCanvas, offset: &Vector) {
         canvas.set_draw_color(Color::RGB(213, 183, 143));
         let offset_center = self.position.sub(offset);
         // println!("OFfset center: {:?}", offset_center);
         canvas.fill_rect(Rect::new((offset_center.x - (self.size / 2) as f32) as i32, (offset_center.y - (self.size / 2) as f32) as i32, self.size, self.size)).unwrap();
     }
 
-    fn draw_offset_circ(&self, canvas: &mut WindowCanvas, offset: &Vector) {
+    pub fn draw_offset_circ(&self, canvas: &mut WindowCanvas, offset: &Vector) {
         canvas.set_draw_color(Color::RGB(117, 100, 63));
 
         let offset_position = self.position.sub(offset);
@@ -153,16 +148,18 @@ impl PhysicsElement for Boat {
     }
 
 
-    fn get_size(&self) -> u32 {
+    pub fn get_size(&self) -> u32 {
         return self.size;
     }
 
-    fn get_position(&self) -> Vector {
+    pub fn get_position(&self) -> Vector {
         return self.position;
     }
 
-    fn get_direction(&self) -> Vector {
+    pub fn get_direction(&self) -> Vector {
         return self.direction;
     }
 
+
 }
+
