@@ -7,13 +7,9 @@ use sdl2::gfx::primitives::DrawRenderer;
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
 pub struct Boat {
-
     pub direction: Vector,
-
     pub position: Vector,
-
     pub size: u32,
-
     pub perimeter: Vec<Vector>,
 }
 
@@ -108,19 +104,6 @@ impl Boat {
         let l10_p2 = Point::new(l10_p2_x as i32, l10_p2_y as i32);
         canvas.draw_line(l10_p1, l10_p2);
     }
-
-    pub fn get_size(&self) -> u32 {
-        return self.size;
-    }
-
-    pub fn get_position(&self) -> Vector {
-        return self.position;
-    }
-
-    pub fn get_direction(&self) -> Vector {
-        return self.direction;
-    }
-
 
 }
 

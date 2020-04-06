@@ -115,16 +115,4 @@ impl Ice {
             canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
         }
     }
-
-    pub fn get_size(&self) -> u32 {
-        return self.size;
-    }
-
-    pub fn get_position(&self) -> Vector {
-        return self.position;
-    }
-
-    pub fn get_direction(&self) -> Vector {
-        return self.direction;
-    }
 }
