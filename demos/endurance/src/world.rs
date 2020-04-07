@@ -7,6 +7,7 @@ use crate::{BOAT_SIZE, ICE_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE, GRID_SIZE
 use crate::keyboard_state::KeyboardState;
 use std::collections::HashMap;
 use crate::geometry::{reflect, lines_intersect, euc_distance};
+use std::time::Instant;
 
 pub struct World {
     size_x: u32,
@@ -165,6 +166,7 @@ impl World {
         self.respond_to_input(keyboard_state);
 
         // Each tick, compute the current grid position of each iceberg
+        // TODO: Should be behind some kind of grid manager api
         let mut grid = HashMap::new();
         for ice in self.ices.iter() {
             let (grid_x, grid_y) = ice.calc_grid();
