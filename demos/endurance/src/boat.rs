@@ -63,7 +63,7 @@ impl Boat {
             ys.push((offset_position.y + pt.y) as i16) ;
         }
 
-        canvas.filled_polygon(&xs, &ys, Color::RGB(213, 183, 143));
+        let _ = canvas.filled_polygon(&xs, &ys, Color::RGB(213, 183, 143));
 
         // Deck bow deck structure
         let mut recs = Vec::new();
@@ -71,7 +71,7 @@ impl Boat {
         recs.push(Rect::from(((offset_position.x - (self.size/ 2) as f32) as i32, (offset_position.y + self.size as f32 / 2.0) as i32, self.size, self.size)));
 
         canvas.set_draw_color(Color::RGB(148, 101, 37));
-        canvas.draw_rects(&recs);
+        let _ = canvas.draw_rects(&recs);
 
 
         // Sails
@@ -84,7 +84,7 @@ impl Boat {
         let l8_p2_x = offset_position.x + ((self.size) + (self.size/2)) as f32;
         let l8_p2_y = offset_position.y - (self.size + (self.size / 2)) as f32;
         let l8_p2 = Point::new(l8_p2_x as i32, l8_p2_y as i32);
-        canvas.draw_line(l8_p1, l8_p2);
+        let _ = canvas.draw_line(l8_p1, l8_p2);
 
         // Middle sail
         let l9_p1_x = offset_position.x - ((self.size) + (self.size)) as f32;
@@ -93,7 +93,7 @@ impl Boat {
         let l9_p2_x = offset_position.x + ((self.size) + (self.size)) as f32;
         let l9_p2_y = offset_position.y;
         let l9_p2 = Point::new(l9_p2_x as i32, l9_p2_y as i32);
-        canvas.draw_line(l9_p1, l9_p2);
+        let _ = canvas.draw_line(l9_p1, l9_p2);
 
         // Back sail
         let l10_p1_x = offset_position.x - ((self.size) + (self.size/2)) as f32;
@@ -102,7 +102,7 @@ impl Boat {
         let l10_p2_x = offset_position.x + ((self.size) + (self.size/2)) as f32;
         let l10_p2_y = offset_position.y + (self.size + (self.size / 2)) as f32;
         let l10_p2 = Point::new(l10_p2_x as i32, l10_p2_y as i32);
-        canvas.draw_line(l10_p1, l10_p2);
+        let _ = canvas.draw_line(l10_p1, l10_p2);
     }
 
 }

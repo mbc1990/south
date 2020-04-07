@@ -3,7 +3,6 @@ use sdl2::render::{WindowCanvas, TextureQuery};
 use sdl2::rect::{Rect, Point};
 use crate::{HUD_FONT_PATH, WIDTH, GRID_SIZE, HEIGHT};
 use crate::vector::Vector;
-use sdl2::gfx::primitives::DrawRenderer;
 
 pub struct Hud {
 }
@@ -15,18 +14,16 @@ impl Hud {
 
     // Draw the grids used in collision detection
     pub fn draw_collision_grid(&self, canvas: &mut WindowCanvas, offset: Vector) {
-        let num_regions_x = WIDTH / GRID_SIZE;
-        let num_regions_y = HEIGHT / GRID_SIZE;
         canvas.set_draw_color(Color::RGB(255, 0, 0));
         for x in -100i32..100i32 {
             let p1 = Point::new((GRID_SIZE as i32 * x) - offset.x as i32, 0);
             let p2 = Point::new((GRID_SIZE as i32 * x) - offset.x as i32, HEIGHT as i32);
-            canvas.draw_line(p1, p2);
+            let _ = canvas.draw_line(p1, p2);
         }
         for y in -100i32..100i32 {
             let p1 = Point::new(0, (GRID_SIZE as i32 * y) - offset.y as i32);
             let p2 = Point::new(WIDTH as i32, (GRID_SIZE as i32 * y) - offset.y as i32);
-            canvas.draw_line(p1, p2);
+            let _ = canvas.draw_line(p1, p2);
         }
     }
 

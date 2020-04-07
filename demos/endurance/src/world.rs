@@ -3,10 +3,9 @@ use crate::boat::{Boat};
 use crate::vector::{Vector};
 use sdl2::render::{WindowCanvas};
 use rand::Rng;
-use crate::{BOAT_SIZE, ICE_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE, GRID_SIZE, WIDTH, HEIGHT, DEBUG_MODE, BOAT_ACCELERATION};
+use crate::{BOAT_SIZE, ICE_DECEL_FACTOR, BERG_MIN_SIZE, BERG_MAX_SIZE, GRID_SIZE, BOAT_ACCELERATION};
 use crate::keyboard_state::KeyboardState;
 use std::collections::HashMap;
-use core::cmp;
 use crate::geometry::{reflect, lines_intersect, euc_distance};
 
 pub struct World {
@@ -14,25 +13,6 @@ pub struct World {
     size_y: u32,
     ices: Vec<Ice>,
     boat: Boat
-}
-
-// TODO: We need to include the object (boat perimeter segment) velocity somehow
-fn reflect_line(subject_pos: Vector, subject_dir: Vector, object_p1: Vector, object_p2: Vector) -> Vector {
-
-    // Find the normals of the line segment we're reflecting off of
-    let dx = object_p2.x - object_p1.x;
-    let dy = object_p2.y - object_p2.y;
-    let normal_1 = Vector{x: -1.0 * dy, y: dx}.norm();
-    let normal_2 = Vector{x: dy, y: -1.0 * dx}.norm();
-
-    let a = subject_dir.norm();
-    let proj = normal_1.dot(&a);
-
-
-
-    // TODO: Need a normal for the line segment
-    // TODO: otherwise, how would we know what direction the berg is coming from
-    return Vector{x:0.0, y:0.0};
 }
 
 impl World {
@@ -48,7 +28,16 @@ impl World {
         let dir = Vector{x:0.0, y:-1.0};
         self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
     }
+
+    // TODO: Rotation
     pub fn key_a(&mut self) {
+        /*
+        theta = deg2rad(angle);
+        cs = cos(theta);
+        sn = sin(theta);
+        px = x * cs - y * sn;
+        py = x * sn + y * cs;
+        */
         let dir = Vector{x:-1.0, y:0.0};
         self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
     }
@@ -57,6 +46,7 @@ impl World {
         // TODO: Constants for keyboard input magic numbers
         self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
     }
+    // TODO: Rotation
     pub fn key_d(&mut self) {
         let dir = Vector{x:1.0, y:0.0};
         self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
@@ -86,16 +76,18 @@ impl World {
             if collisions.len() == 0 {
                 self.ices.push(berg);
                 num_bergs -= 1;
-                println!("{:?} bergs remaining", num_bergs);
+                // println!("{:?} bergs remaining", num_bergs);
             }
         }
     }
 
+    /*
     pub fn init_test(&mut self) {
         self.ices.push(Ice::new(Vector{x: 800.0, y: 100.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }
+    */
 
     fn find_collisions<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
         let collisions = ices.iter()
@@ -186,27 +178,19 @@ impl World {
         let mut grid = HashMap::new();
         for ice in self.ices.iter() {
             let (grid_x, grid_y) = ice.calc_grid();
-            let mut col = grid.entry(grid_x).or_insert(HashMap::new());
-            let mut row = col.entry(grid_y).or_insert(Vec::new());
+            let col = grid.entry(grid_x).or_insert(HashMap::new());
+            let row = col.entry(grid_y).or_insert(Vec::new());
             row.push(ice.clone());
         }
 
         // Update the boat position
         self.boat.position = self.boat.position.add(&self.boat.direction);
 
-        let current_ices = self.ices.clone();
-        let mut total_collisions = 0;
         let ices = self.ices.iter_mut();
         for ice in ices {
 
-            let temp_dir = ice.direction.clone();
-            let temp_pos = ice.position.clone();
-
             match World::get_boat_collision(&self.boat, &ice) {
-                Some((p1, p2)) => {
-                    println!("Reflecting berg off boat line");
-                    // ice.direction = reflect_line(temp_pos, temp_dir, p1, p2);
-
+                Some((_p1, _p2)) => {
                     // TODO: Temporary hack because I don't feel like working on the (correct) collision resolution logic
                     ice.direction = self.boat.direction.mul(1.5);
                 },
@@ -218,7 +202,7 @@ impl World {
             let (grid_x, grid_y) = ice.calc_grid();
 
             // Colocated bergs - hopefully only a few
-            let mut others_in_grid = World::get_grid_region_bergs(&grid, grid_x, grid_y).unwrap();
+            let others_in_grid = World::get_grid_region_bergs(&grid, grid_x, grid_y).unwrap();
             let mut possible_collisions = Vec::new();
             possible_collisions.append(&mut others_in_grid.clone());
 
@@ -275,7 +259,6 @@ impl World {
 
             // Collisions from circular bounding box
             let collisions = World::find_collisions(&possible_collisions, &ice);
-            total_collisions += collisions.len();
             for collision in collisions {
 
                 // Don't collide with yourself
@@ -284,8 +267,7 @@ impl World {
                     continue;
                 }
 
-                if (World::is_real_collision(&ice, &collision)) {
-                    let pre_reflection = ice.direction.clone();
+                if World::is_real_collision(&ice, &collision) {
                     ice.direction = reflect(ice.position, ice.direction, collision.position, collision.direction);
                 }
             }
@@ -294,7 +276,6 @@ impl World {
             ice.direction = ice.direction.mul(ICE_DECEL_FACTOR);
             ice.position = ice.position.add(&ice.direction);
         }
-        println!("Total collisions: {:}", total_collisions);
     }
 
     pub fn get_offset(&self) -> Vector {

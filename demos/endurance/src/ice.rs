@@ -1,4 +1,3 @@
-use sdl2::rect::Point;
 use sdl2::render::{WindowCanvas};
 use rand::Rng;
 use sdl2::pixels::Color;
@@ -40,7 +39,6 @@ impl Ice {
         let mut perimeter  =  Vec::new();
         let mut inner_perimeter  =  Vec::new();
         let point_x = 0;
-        let point_y = 0;
         let offset_position_x = 0.0;
         let offset_position_y = 0.0;
         for i in 0..13 {
@@ -108,11 +106,10 @@ impl Ice {
             inner_ys.push((p1.y + self.position.y - offset.y) as i16);
         }
         if DEBUG_MODE {
-            let (grid_x, grid_y) = self.calc_grid();
-            canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
+            let _ = canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
         } else {
-            canvas.filled_polygon(&xs, &ys, Color::RGB(192, 234, 242));
-            canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
+            let _ = canvas.filled_polygon(&xs, &ys, Color::RGB(192, 234, 242));
+            let _ = canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
         }
     }
 }
