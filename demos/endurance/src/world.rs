@@ -148,25 +148,15 @@ impl World {
         }
     }
 
-    fn get_grid_region_bergs(grid: &HashMap<i32, HashMap<i32, Vec<Ice>>>, grid_x: i32, grid_y: i32) -> Result<Vec<Ice>, String> {
-        let adj_grid_col= grid.get(&(grid_x));
+    fn get_grid_region_bergs(grid: &HashMap<i32, HashMap<i32, Vec<Ice>>>, grid_x: i32, grid_y: i32) -> Vec<Ice> {
         let mut in_grid = Vec::new();
-        match adj_grid_col {
-            Some(col) => {
-                let adj_grid_row = col.get(&grid_y);
-                match adj_grid_row {
-                    Some(bergs) => {
-                        let to_append = bergs.clone();
-                        in_grid.append(&mut to_append.clone());
-                    },
-                    _ => {
-                    }
-                }
-            },
-            _ => {
+        if let Some(col) = grid.get(&grid_x) {
+            if let Some(bergs) = col.get(&grid_y) {
+                let to_append = bergs.clone();
+                in_grid.append(&mut to_append.clone());
             }
         }
-        return Ok(in_grid);
+        return in_grid;
     }
 
     // Called from event loop
@@ -189,20 +179,15 @@ impl World {
         let ices = self.ices.iter_mut();
         for ice in ices {
 
-            match World::get_boat_collision(&self.boat, &ice) {
-                Some((_p1, _p2)) => {
-                    // TODO: Temporary hack because I don't feel like working on the (correct) collision resolution logic
-                    ice.direction = self.boat.direction.mul(1.5);
-                },
-                None => {
-
-                }
+            // Update ice position if it's colliding with the boat
+            if let Some((_p1, _p2)) = World::get_boat_collision(&self.boat, &ice) {
+                ice.direction = self.boat.direction.mul(1.5);
             }
 
             let (grid_x, grid_y) = ice.calc_grid();
 
             // Colocated bergs - hopefully only a few
-            let others_in_grid = World::get_grid_region_bergs(&grid, grid_x, grid_y).unwrap();
+            let others_in_grid = World::get_grid_region_bergs(&grid, grid_x, grid_y);
             let mut possible_collisions = Vec::new();
             possible_collisions.append(&mut others_in_grid.clone());
 
@@ -217,43 +202,43 @@ impl World {
             let y_2 = (ice.position.y + ice.size as f32) > (((grid_y + 1) * GRID_SIZE as i32) - BERG_MAX_SIZE as i32) as f32;
 
             if x_1 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y).unwrap();
+                let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y);
                 possible_collisions.append(&mut to_append.clone());
             }
             if x_2 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x + 1, grid_y).unwrap();
+                let to_append = World::get_grid_region_bergs(&grid, grid_x + 1, grid_y);
                 possible_collisions.append(&mut to_append.clone());
             }
             if y_1 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x, grid_y - 1).unwrap();
+                let to_append = World::get_grid_region_bergs(&grid, grid_x, grid_y - 1);
                 possible_collisions.append(&mut to_append.clone());
             }
             if y_2 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x, grid_y + 1).unwrap();
+                let to_append = World::get_grid_region_bergs(&grid, grid_x, grid_y + 1);
                 possible_collisions.append(&mut to_append.clone());
             }
 
             // Upper left corner
             if x_1 && y_1 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y - 1).unwrap();
+                let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y - 1);
                 possible_collisions.append(&mut to_append.clone());
             }
 
             // Lower left corner
             if x_1 && y_2 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y + 1).unwrap();
+                let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y + 1);
                 possible_collisions.append(&mut to_append.clone());
             }
 
             // Upper right corner
             if x_2 && y_1 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x + 1, grid_y - 1).unwrap();
+                let to_append = World::get_grid_region_bergs(&grid, grid_x + 1, grid_y - 1);
                 possible_collisions.append(&mut to_append.clone());
             }
 
             // Lower right corner
             if x_2 && y_2 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x + 1, grid_y + 1).unwrap();
+                let to_append = World::get_grid_region_bergs(&grid, grid_x + 1, grid_y + 1);
                 possible_collisions.append(&mut to_append.clone());
             }
 
