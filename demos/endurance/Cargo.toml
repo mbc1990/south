@@ -9,3 +9,10 @@ edition = "2018"
 [dependencies]
 sdl2 = {version = "0.32.2", features = ["ttf", "gfx"]}
 rand = "0.7.2"
+
+[dependencies.gl]
+git = "https://github.com/bjz/gl-rs"
+
+# For perf tuning
+# [profile.release]
+# debug = true

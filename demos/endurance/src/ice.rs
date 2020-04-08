@@ -13,7 +13,8 @@ pub struct Ice {
     // Maximum radius of circle underlying iceberg
     pub size: u32,
     pub perimeter: Vec<Vector>,
-    pub inner_perimeter: Vec<Vector>
+    pub inner_perimeter: Vec<Vector>,
+    triangles: Vec<(Vector, Vector, Vector)>
 }
 
 impl Ice {
@@ -39,8 +40,10 @@ impl Ice {
         let mut perimeter  =  Vec::new();
         let mut inner_perimeter  =  Vec::new();
         let point_x = 0;
+        // TODO: Offset can be removed, since it's set to 0 here
         let offset_position_x = 0.0;
         let offset_position_y = 0.0;
+        let mut triangles = Vec::new();
         for i in 0..13 {
             let angle = i * 30;
             let zig_zag_factor = zig_zags.get(i).unwrap();
@@ -50,6 +53,13 @@ impl Ice {
             let r_y = angle_rad.sin() * (point_x as f64 - offset_position_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- offset_position_y as f64) + offset_position_y as f64;
             perimeter.push(Vector{x: r_x as f32, y: r_y as f32 });
 
+            //
+            if i > 1 {
+                let last_point = perimeter.get(i - 1).unwrap();
+                let triangle = (Vector{x: r_x as f32, y: r_y as f32}, Vector{x: last_point.x, y: last_point.y}, Vector{x: offset_position_x, y: offset_position_y});
+                triangles.push(triangle);
+            }
+
             let inner_zig_zag_factor = inner_zig_zags.get(i).unwrap();
             let inner_zig_zagged_point_y = offset_position_y + *inner_zig_zag_factor as f32;
             let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
@@ -58,7 +68,13 @@ impl Ice {
             inner_perimeter.push(Vector{x: r_x as f32, y: r_y as f32 });
         }
 
-        Ice{direction, position, size, perimeter, inner_perimeter}
+        let last_point = perimeter.last().unwrap();
+        let first_point = perimeter.first().unwrap();
+        // TODO: Still broken, still slow
+        let triangle = (Vector{x: first_point.x, y: first_point.y}, Vector{x: last_point.x, y: last_point.y}, Vector{x: offset_position_x, y: offset_position_y});
+        triangles.push(triangle);
+
+        Ice{direction, position, size, perimeter, inner_perimeter, triangles}
     }
 
     pub fn calc_grid(&self) -> (i32, i32) {
@@ -90,6 +106,21 @@ impl Ice {
 
         canvas.set_draw_color(Color::RGB(228, 240, 253));
 
+        // TODO: Draw each triangle
+        for trigon in &self.triangles {
+
+            canvas.filled_trigon((trigon.0.x + self.position.x - offset.x) as i16,
+                                 (trigon.0.y + self.position.y - offset.y) as i16,
+                                 (trigon.1.x + self.position.x - offset.x) as i16,
+                                 (trigon.1.y + self.position.y - offset.y) as i16,
+                                 (trigon.2.x + self.position.x - offset.x) as i16,
+                                 (trigon.2.y + self.position.y - offset.y) as i16,
+            Color::RGB(228, 240, 253));
+
+        }
+
+        /*
+
         let mut xs = Vec::new();
         let mut ys= Vec::new();
 
@@ -109,7 +140,10 @@ impl Ice {
             let _ = canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
         } else {
             let _ = canvas.filled_polygon(&xs, &ys, Color::RGB(192, 234, 242));
-            let _ = canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
+            // let _ = canvas.aa_polygon(&xs, &ys, Color::RGB(192, 234, 242));
+            // let _ = canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
+            // let _ = canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
         }
+        */
     }
 }
