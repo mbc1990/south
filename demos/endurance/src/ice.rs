@@ -106,9 +106,14 @@ impl Ice {
 
         canvas.set_draw_color(Color::RGB(228, 240, 253));
 
-        // TODO: Draw each triangle
         for trigon in &self.triangles {
-
+            unsafe {
+                // gl::ClearColor(0.6, 0.0, 0.8, 1.0);
+                // gl::Clear(gl::COLOR_BUFFER_BIT);
+            }
+            // TODO: Is there an opengl call to draw triangles that's faster than this?
+            // TODO: This seems to ulimately use the polygon fill algorithm
+            /*
             canvas.filled_trigon((trigon.0.x + self.position.x - offset.x) as i16,
                                  (trigon.0.y + self.position.y - offset.y) as i16,
                                  (trigon.1.x + self.position.x - offset.x) as i16,
@@ -116,6 +121,7 @@ impl Ice {
                                  (trigon.2.x + self.position.x - offset.x) as i16,
                                  (trigon.2.y + self.position.y - offset.y) as i16,
             Color::RGB(228, 240, 253));
+            */
 
         }
 
