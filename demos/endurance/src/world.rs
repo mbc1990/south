@@ -84,7 +84,7 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        self.ices.push(Ice::new(Vector{x: 800.0, y: 100.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
+        self.ices.push(Ice::new(Vector{x: 0.0, y: 0.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }
@@ -276,11 +276,23 @@ impl World {
             let mut berg_verts = berg.get_vertices(&offset);
             vertices.append(&mut berg_verts);
         }
+        /*
+        let mut vertices: Vec<f32> = vec![
+            // positions      // colors
+            0.25, -0.5, 0.0,   1.0, 0.0, 0.0,   // bottom right
+            -0.75, -0.5, 0.0,  0.0, 1.0, 0.0,   // bottom left
+            -0.25,  0.5, 0.0,   0.0, 0.0, 1.0,    // top
+            0.75, -0.5, 0.0,   1.0, 0.0, 0.0,   // bottom right
+            -0.25, -0.5, 0.0,  0.0, 1.0, 0.0,   // bottom left
+            0.25,  0.5, 0.0,   0.0, 0.0, 1.0    // top
+        ];
+        */
 
         let mut vbo: gl::types::GLuint = 0;
         let mut vao: gl::types::GLuint = 0;
         unsafe {
-            gl::GenBuffers(vertices.len() as i32, &mut vbo);
+            gl::GenBuffers((vertices.len()  / 18) as i32, &mut vbo);
+            // gl::GenBuffers(1, &mut vbo);
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
             gl::BufferData(
                 gl::ARRAY_BUFFER,                                                       // target
@@ -289,7 +301,8 @@ impl World {
                 gl::STATIC_DRAW,                               // usage
             );
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-            gl::GenVertexArrays(vertices.len() as i32, &mut vao);
+            gl::GenVertexArrays((vertices.len() / 18) as i32, &mut vao);
+            // gl::GenVertexArrays(1, &mut vao);
 
             gl::BindVertexArray(vao);
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
