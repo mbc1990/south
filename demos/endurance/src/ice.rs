@@ -14,7 +14,7 @@ pub struct Ice {
     pub size: u32,
     pub perimeter: Vec<Vector>,
     pub inner_perimeter: Vec<Vector>,
-    triangles: Vec<(Vector, Vector, Vector)>
+    triangles: Vec<Vec<Vector>>
 }
 
 impl Ice {
@@ -56,7 +56,7 @@ impl Ice {
             //
             if i > 1 {
                 let last_point = perimeter.get(i - 1).unwrap();
-                let triangle = (Vector{x: r_x as f32, y: r_y as f32}, Vector{x: last_point.x, y: last_point.y}, Vector{x: offset_position_x, y: offset_position_y});
+                let triangle = vec![Vector{x: r_x as f32, y: r_y as f32}, Vector{x: last_point.x, y: last_point.y}, Vector{x: offset_position_x, y: offset_position_y}];
                 triangles.push(triangle);
             }
 
@@ -71,7 +71,7 @@ impl Ice {
         let last_point = perimeter.last().unwrap();
         let first_point = perimeter.first().unwrap();
         // TODO: Still broken, still slow
-        let triangle = (Vector{x: first_point.x, y: first_point.y}, Vector{x: last_point.x, y: last_point.y}, Vector{x: offset_position_x, y: offset_position_y});
+        let triangle = vec![Vector{x: first_point.x, y: first_point.y}, Vector{x: last_point.x, y: last_point.y}, Vector{x: offset_position_x, y: offset_position_y}];
         triangles.push(triangle);
 
         Ice{direction, position, size, perimeter, inner_perimeter, triangles}
@@ -91,6 +91,38 @@ impl Ice {
             grid_y -= 1;
         }
         return (grid_x, grid_y);
+    }
+
+    pub fn get_vertices(&self, offset: &Vector) -> Vec<f32> {
+        let mut ret = Vec::new();
+        for trigon in &self.triangles {
+            for vertex in trigon {
+
+                // Offset-adjusted points
+                let pos_x = vertex.x + self.position.x - offset.x;
+                let pos_y = vertex.y + self.position.y - offset.y;
+                let pos_z = 0.0;
+
+                // Map these points into the normalized device coordinates space
+                let input_range = WIDTH as f32;
+                let output_range = 1.0 - -1.0;
+                let output_x = (pos_x - 0.0)*output_range / input_range + -1.0;
+
+                let input_range = HEIGHT as f32;
+                let output_range = 1.0 - -1.0;
+                let output_y = (pos_y - 0.0)*output_range / input_range + -1.0;
+                ret.push(output_x);
+                ret.push(output_y);
+                ret.push(pos_z);
+
+                // Colors
+                ret.push(0.0);
+                ret.push(1.0);
+                ret.push(0.0);
+
+            }
+        }
+        return ret;
     }
 
     pub fn draw(&self, canvas: &mut WindowCanvas, offset: &Vector) {
@@ -113,6 +145,7 @@ impl Ice {
             }
             // TODO: Is there an opengl call to draw triangles that's faster than this?
             // TODO: This seems to ulimately use the polygon fill algorithm
+            /*
             canvas.filled_trigon((trigon.0.x + self.position.x - offset.x) as i16,
                                  (trigon.0.y + self.position.y - offset.y) as i16,
                                  (trigon.1.x + self.position.x - offset.x) as i16,
@@ -120,6 +153,7 @@ impl Ice {
                                  (trigon.2.x + self.position.x - offset.x) as i16,
                                  (trigon.2.y + self.position.y - offset.y) as i16,
             Color::RGB(228, 240, 253));
+            */
         }
 
         /*

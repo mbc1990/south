@@ -8,6 +8,7 @@ use crate::keyboard_state::KeyboardState;
 use std::collections::HashMap;
 use crate::geometry::{reflect, lines_intersect, euc_distance};
 use std::time::Instant;
+use crate::render_gl::Program;
 
 pub struct World {
     size_x: u32,
@@ -82,13 +83,11 @@ impl World {
         }
     }
 
-    /*
     pub fn init_test(&mut self) {
         self.ices.push(Ice::new(Vector{x: 800.0, y: 100.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }
-    */
 
     fn find_collisions<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
         let collisions = ices.iter()
@@ -267,6 +266,71 @@ impl World {
 
     pub fn get_offset(&self) -> Vector {
         return self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
+    }
+
+    pub fn draw_gl(&self, program: &Program) {
+        let offset = self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
+        let mut vertices: Vec<f32>= Vec::new();
+        for berg in &self.ices {
+            // berg.draw(canvas, &offset);
+            let mut berg_verts = berg.get_vertices(&offset);
+            vertices.append(&mut berg_verts);
+        }
+
+        let mut vbo: gl::types::GLuint = 0;
+        let mut vao: gl::types::GLuint = 0;
+        unsafe {
+            gl::GenBuffers(vertices.len() as i32, &mut vbo);
+            gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+            gl::BufferData(
+                gl::ARRAY_BUFFER,                                                       // target
+                (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
+                vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
+                gl::STATIC_DRAW,                               // usage
+            );
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+            gl::GenVertexArrays(vertices.len() as i32, &mut vao);
+
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+
+            gl::EnableVertexAttribArray(0); // this is "layout (location = 0)" in vertex shader
+            gl::VertexAttribPointer(
+                0,         // index of the generic vertex attribute ("layout (location = 0)")
+                3,         // the number of components per generic vertex attribute
+                gl::FLOAT, // data type
+                gl::FALSE, // normalized (int-to-float conversion)
+                (6 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
+                std::ptr::null(),                                     // offset of the first component
+            );
+            gl::EnableVertexAttribArray(1); // this is "layout (location = 0)" in vertex shader
+            gl::VertexAttribPointer(
+                1,         // index of the generic vertex attribute ("layout (location = 0)")
+                3,         // the number of components per generic vertex attribute
+                gl::FLOAT, // data type
+                gl::FALSE, // normalized (int-to-float conversion)
+                (6 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
+                (3 * std::mem::size_of::<f32>()) as *const gl::types::GLvoid, // offset of the first component
+            );
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+            gl::BindVertexArray(0);
+
+            program.set_used();
+            gl::BindVertexArray(vao);
+            gl::DrawArrays(
+                gl::TRIANGLES, // mode
+                0,             // starting index in the enabled arrays
+                3 * vertices.len() as i32,             // number of indices to be rendered
+            );
+        }
+
+
+        // TODO: Now we have the properly structured vertices for all the berg triangles
+        // TODO: So, we need to draw them...
+
+        // TODO: Opengl boat
+        // self.boat.draw(canvas, &offset);
+
     }
 
     pub fn draw(&self, canvas: &mut WindowCanvas) {
