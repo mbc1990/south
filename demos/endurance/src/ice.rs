@@ -98,10 +98,13 @@ impl Ice {
         for trigon in &self.triangles {
             for vertex in trigon {
 
-                // Offset-adjusted points
+                // Offset-adjusted points (position relative to an origin in the upper left corner of the visible screen)
                 let pos_x = vertex.x + self.position.x - offset.x;
-                let pos_y = vertex.y + self.position.y - offset.y;
+                let mut pos_y = vertex.y + self.position.y - offset.y;
                 let pos_z = 0.0;
+
+                // NDC System has bottom right origin, so adjust our y value (top left origin) into that system
+                pos_y = HEIGHT as f32 - pos_y;
 
                 // Map these points into the normalized device coordinates space
                 let input_range = WIDTH as f32;
@@ -119,7 +122,6 @@ impl Ice {
                 ret.push(0.0);
                 ret.push(1.0);
                 ret.push(0.0);
-
             }
         }
         return ret;

@@ -70,8 +70,8 @@ fn main() -> Result<(), String> {
     // let hud = Hud::new();
     let mut world = World::new(WIDTH, HEIGHT);
 
-    // world.init_test();
-    world.init_with_random_ice(1);
+    world.init_test();
+    // world.init_with_random_ice(1);
     unsafe {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
         gl::Clear(gl::COLOR_BUFFER_BIT);

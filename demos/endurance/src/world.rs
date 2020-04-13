@@ -84,7 +84,7 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        self.ices.push(Ice::new(Vector{x: 0.0, y: 0.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
+        self.ices.push(Ice::new(Vector{x: 800.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }
