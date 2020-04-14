@@ -84,7 +84,8 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        self.ices.push(Ice::new(Vector{x: 800.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
+        self.ices.push(Ice::new(Vector{x: 400.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
+        // self.ices.push(Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }
@@ -271,12 +272,16 @@ impl World {
     pub fn draw_gl(&self, program: &Program) {
         let offset = self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
         let mut vertices: Vec<f32>= Vec::new();
+
+        // TODO: This results in segfaults
         for berg in &self.ices {
             // berg.draw(canvas, &offset);
             let mut berg_verts = berg.get_vertices(&offset);
             vertices.append(&mut berg_verts);
         }
+
         /*
+        // TODO: This does *not* result in segfaults
         let mut vertices: Vec<f32> = vec![
             // positions      // colors
             0.25, -0.5, 0.0,   1.0, 0.0, 0.0,   // bottom right
@@ -290,6 +295,7 @@ impl World {
 
         let mut vbo: gl::types::GLuint = 0;
         let mut vao: gl::types::GLuint = 0;
+        let num_verts = vertices.len();
         unsafe {
             gl::GenBuffers((vertices.len()  / 18) as i32, &mut vbo);
             // gl::GenBuffers(1, &mut vbo);
