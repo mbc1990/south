@@ -19,48 +19,36 @@ pub struct Ice {
 impl Ice {
 
     pub fn new(position: Vector, direction: Vector, size: u32) -> Ice {
-        // Randomly generated perimeter & inner perimeter
-        let mut zig_zags = Vec::new();
+
+        let num_sides = 15;
         let mut rng = rand::thread_rng();
-        for _ in 0..12 {
-            let zig_zag_factor = rng.gen_range(size/2, size);
-            zig_zags.push(zig_zag_factor);
-        }
-
-        // Last one should be the same as the first so the shape is closed
-        zig_zags.push(*zig_zags.get(0).unwrap());
-
-
-        // Rotate a point around the circle representing the iceberg, changing the radius of the point to create jagged edges
-        // TODO: Simplify math, or at least remove some of this ridiculous casting
         let mut perimeter  =  Vec::new();
-        let point_x = 0;
-        // TODO: Offset can be removed, since it's set to 0 here
-        let offset_position_x = 0.0;
-        let offset_position_y = 0.0;
         let mut triangles = Vec::new();
-        for i in 0..13 {
-            let angle = i * 30;
-            let zig_zag_factor = zig_zags.get(i).unwrap();
-            let zig_zagged_point_y = offset_position_y + *zig_zag_factor as f32;
+        let base_angle = 360.0 / num_sides as f32;
+
+        for i in 0..num_sides {
+            // let dist = rng.gen_range(size/2, size);
+            let dist = size; // TODO: Debugging
+            let angle = i as f32 * base_angle;
             let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
-            let r_x = angle_rad.cos() * (point_x as f64 - offset_position_x as f64) - angle_rad.sin() * (zig_zagged_point_y as f64- offset_position_y as f64) + offset_position_x as f64;
-            let r_y = angle_rad.sin() * (point_x as f64 - offset_position_x as f64) - angle_rad.cos() * (zig_zagged_point_y as f64- offset_position_y as f64) + offset_position_y as f64;
+            let r_x = angle_rad.cos() * 0.0 - angle_rad.sin() * (dist as f64);
+            let r_y = angle_rad.sin() * 0.0 - angle_rad.cos() * (dist as f64);
             perimeter.push(Vector{x: r_x as f32, y: r_y as f32 });
 
-            //
-            if i > 1 {
-                let last_point = perimeter.get(i - 1).unwrap();
-                let triangle = vec![Vector{x: r_x as f32, y: r_y as f32}, Vector{x: last_point.x, y: last_point.y}, Vector{x: offset_position_x, y: offset_position_y}];
+            // triangles (in local space) to be used for rendering later
+            if i > 0 {
+                let p1 = Vector{x: 0.0, y: 0.0};
+                let p2 = perimeter.get(i-1).unwrap().clone();
+                let p3 = perimeter.get(i).unwrap().clone();
+                let triangle = vec![p1, p2, p3];
                 triangles.push(triangle);
             }
         }
-
-        let last_point = perimeter.last().unwrap();
-        let first_point = perimeter.first().unwrap();
-        // TODO: Still broken, still slow
-        let triangle = vec![Vector{x: first_point.x, y: first_point.y}, Vector{x: last_point.x, y: last_point.y}, Vector{x: offset_position_x, y: offset_position_y}];
-        triangles.push(triangle);
+        // Last triangle
+        let p1 = Vector{x: 0.0, y: 0.0};
+        let p2 = perimeter.first().unwrap().clone();
+        let p3 = perimeter.last().unwrap().clone();
+        triangles.push(vec![p1, p2, p3]);
 
         Ice{direction, position, size, perimeter, triangles}
     }
