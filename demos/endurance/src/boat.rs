@@ -51,6 +51,10 @@ impl Boat {
         self.perimeter.push(Vector{x: l6_p1_x, y: l6_p1_y});
     }
 
+    pub fn draw_gl(&self) {
+
+    }
+
     pub fn draw(&self, canvas: &mut WindowCanvas, offset: &Vector) {
         canvas.set_draw_color(Color::RGB(213, 183, 143));
 

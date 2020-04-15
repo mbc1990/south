@@ -346,7 +346,7 @@ impl World {
         }
 
         // TODO: Draw boat with opengl
-        // self.boat.draw(canvas, &offset);
+        self.boat.draw_gl();
 
     }
 }
