@@ -27,8 +27,7 @@ impl Ice {
         let base_angle = 360.0 / num_sides as f32;
 
         for i in 0..num_sides {
-            // let dist = rng.gen_range(size/2, size);
-            let dist = size; // TODO: Debugging
+            let dist = rng.gen_range(size/2, size);
             let angle = i as f32 * base_angle;
             let angle_rad = angle as f64 * std::f64::consts::PI / 180 as f64;
             let r_x = angle_rad.cos() * 0.0 - angle_rad.sin() * (dist as f64);
@@ -101,64 +100,5 @@ impl Ice {
             }
         }
         return ret;
-    }
-
-    pub fn draw(&self, canvas: &mut WindowCanvas, offset: &Vector) {
-        // Don't draw if not visible
-        let offset_position = self.position.sub(offset);
-        let x_min = 0.0 - BERG_MAX_SIZE as f32;
-        let x_max = WIDTH as f32 + BERG_MAX_SIZE as f32;
-        let y_min = 0.0 - BERG_MIN_SIZE as f32;
-        let y_max = HEIGHT as f32 + BERG_MAX_SIZE as f32;
-        if !(offset_position.x > x_min && offset_position.x < x_max && offset_position.y > y_min && offset_position.y < y_max) {
-            return;
-        }
-
-        canvas.set_draw_color(Color::RGB(228, 240, 253));
-
-        for trigon in &self.triangles {
-            unsafe {
-                // gl::ClearColor(0.6, 0.0, 0.8, 1.0);
-                // gl::Clear(gl::COLOR_BUFFER_BIT);
-            }
-            // TODO: Is there an opengl call to draw triangles that's faster than this?
-            // TODO: This seems to ulimately use the polygon fill algorithm
-            /*
-            canvas.filled_trigon((trigon.0.x + self.position.x - offset.x) as i16,
-                                 (trigon.0.y + self.position.y - offset.y) as i16,
-                                 (trigon.1.x + self.position.x - offset.x) as i16,
-                                 (trigon.1.y + self.position.y - offset.y) as i16,
-                                 (trigon.2.x + self.position.x - offset.x) as i16,
-                                 (trigon.2.y + self.position.y - offset.y) as i16,
-            Color::RGB(228, 240, 253));
-            */
-        }
-
-        /*
-
-        let mut xs = Vec::new();
-        let mut ys= Vec::new();
-
-        let mut inner_xs = Vec::new();
-        let mut inner_ys = Vec::new();
-
-        // Connect the points of the iceberg polygon with lines
-        for i in 0..self.perimeter.len() - 1 {
-            let p1 = self.perimeter.get(i).unwrap();
-            xs.push((p1.x + self.position.x - offset.x) as i16);
-            ys.push((p1.y + self.position.y - offset.y) as i16);
-            let p1 = self.inner_perimeter.get(i).unwrap();
-            inner_xs.push((p1.x + self.position.x - offset.x) as i16);
-            inner_ys.push((p1.y + self.position.y - offset.y) as i16);
-        }
-        if DEBUG_MODE {
-            let _ = canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
-        } else {
-            let _ = canvas.filled_polygon(&xs, &ys, Color::RGB(192, 234, 242));
-            // let _ = canvas.aa_polygon(&xs, &ys, Color::RGB(192, 234, 242));
-            // let _ = canvas.polygon(&xs, &ys, Color::RGB(192, 234, 242));
-            // let _ = canvas.filled_polygon(&inner_xs, &inner_ys, Color::RGB(228, 240, 253));
-        }
-        */
     }
 }

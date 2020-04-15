@@ -25,7 +25,7 @@ pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
 pub const FPS: u32 = 30;
 pub const BOAT_SIZE: u32 = 25;
-pub const NUM_BERGS: i32 = 1;
+pub const NUM_BERGS: i32 = 500;
 pub const BERG_MIN_SIZE: u32 = 10;
 pub const BERG_MAX_SIZE: u32 = 75;
 pub const ICE_DECEL_FACTOR: f32 = 0.99;
@@ -66,26 +66,19 @@ fn main() -> Result<(), String> {
 
     let event_pump = sdl.event_pump()?;
     let mut input_manager = InputManager::new(event_pump);
+
     // TODO: Migrate hud to opengl
     // let hud = Hud::new();
+
     let mut world = World::new(WIDTH, HEIGHT);
-
     // world.init_test();
-
-    // TODO: Can render 32x4, but 64x4 (18,432 bytes) segfaults
-    world.init_with_random_ice(2048);
-    println!("Done init?");
+    world.init_with_random_ice(NUM_BERGS);
     unsafe {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
         gl::Clear(gl::COLOR_BUFFER_BIT);
     }
     world.draw_gl(&shader_program);
-    println!("Buffers all send over");
     window.gl_swap_window();
-
-    // world.draw(&mut canvas);
-
-    // canvas.present();
 
     let frame_length = 1000.0 / FPS as f32;
     'running: loop {
@@ -101,7 +94,6 @@ fn main() -> Result<(), String> {
         }
 
         world.tick(&keyboard_state);
-        // world.draw_gl(&mut canvas);
         world.draw_gl(&shader_program);
         window.gl_swap_window();
 
@@ -109,92 +101,6 @@ fn main() -> Result<(), String> {
         if elapsed.as_millis() < frame_length as u128 {
             thread::sleep(time::Duration::from_millis((frame_length - elapsed.as_millis() as f32) as u64));
         }
-        // canvas.present();
-    }
-
-    Ok(())
-}
-
-
-fn oldmain() -> Result<(), String> {
-
-    println!("Welcome to the Endurance demo");
-    let sdl_context = sdl2::init()?;
-    let mut canvas = construct_canvas(&sdl_context)?;
-    let event_pump = sdl_context.event_pump()?;
-    let mut input_manager = InputManager::new(event_pump);
-    let hud = Hud::new();
-    let mut world = World::new(WIDTH, HEIGHT);
-
-    // canvas.set_draw_color(Color::RGB(6, 100, 193));
-    // canvas.clear();
-    world.init_with_random_ice(NUM_BERGS);
-    // world.init_test();
-    world.draw(&mut canvas);
-    canvas.present();
-
-    let frame_length = 1000.0 / FPS as f32;
-    'running: loop {
-        let frame_start = Instant::now();
-
-        let keyboard_state = input_manager.get_keyboard_state();
-        if keyboard_state.esc {
-            break 'running;
-        }
-
-        // canvas.set_draw_color(Color::RGB(6, 100, 193));
-        // canvas.clear();
-        world.tick(&keyboard_state);
-        world.draw(&mut canvas);
-
-        let elapsed = frame_start.elapsed();
-        if elapsed.as_millis() < frame_length as u128 {
-            thread::sleep(time::Duration::from_millis((frame_length - elapsed.as_millis() as f32) as u64));
-        }
-
-        if DEBUG_MODE {
-            hud.draw_fps(&mut canvas, 1000.0 / frame_start.elapsed().as_millis() as f32);
-            hud.draw_collision_grid(&mut canvas, world.get_offset());
-        }
-        canvas.present();
     }
     Ok(())
-}
-
-fn find_sdl_gl_driver() -> Option<u32> {
-    for (index, item) in sdl2::render::drivers().enumerate() {
-        if item.name == "opengl" {
-            return Some(index as u32);
-        }
-    }
-    None
-}
-
-fn construct_canvas(sdl_context: &Sdl) -> Result<WindowCanvas, String> {
-    let video_subsystem = sdl_context.video()?;
-
-    // the window is the representation of a window in your operating system,
-    // however you can only manipulate properties of that window, like its size, whether it's
-    // fullscreen, ... but you cannot change its content without using a Canvas or using the
-    // `surface()` method.
-    let window = video_subsystem
-        .window("Endurance",
-                WIDTH,
-                HEIGHT)
-        .opengl()
-        .position_centered()
-        .build()
-        .map_err(|e| e.to_string())?;
-
-    // the canvas allows us to both manipulate the property of the window and to change its content
-    // via hardware or software rendering. See CanvasBuilder for more info.
-    let canvas = window.into_canvas()
-        .index(find_sdl_gl_driver().unwrap())
-        .build()
-        .map_err(|e| e.to_string())?;
-
-    gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
-    canvas.window().gl_set_context_to_current();
-
-    return Ok(canvas);
 }
