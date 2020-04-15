@@ -70,10 +70,10 @@ fn main() -> Result<(), String> {
     // let hud = Hud::new();
     let mut world = World::new(WIDTH, HEIGHT);
 
-    world.init_test();
+    // world.init_test();
 
     // TODO: Can render 32x4, but 64x4 (18,432 bytes) segfaults
-    // world.init_with_random_ice(64);
+    world.init_with_random_ice(2048);
     println!("Done init?");
     unsafe {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);

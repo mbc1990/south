@@ -87,8 +87,10 @@ impl World {
         // TODO: 57x4 works (16,416 bytes)
         // TODO: 58x4 segfaults (16,704 bytes)
         // self.ices.push(Ice::new(Vector { x: 10.0 as f32 * 22.0, y: 10.0 }, Vector { x: 10.0, y: 0.0 }.mul(0.0), 10));
-        for i in 0..2 {
-            self.ices.push(Ice::new(Vector { x: 10.0 + i as f32 * 22.0, y: 10.0 }, Vector { x: 10.0, y: 0.0 }.mul(0.0), 10));
+        for k in (0..10) {
+            for i in 0..16 {
+                self.ices.push(Ice::new(Vector { x: 10.0 + i as f32 * 22.0, y: 10.0 + k as f32 * 22.0}, Vector { x: 10.0, y: 0.0 }.mul(1.0), 10));
+            }
         }
 
         /*
