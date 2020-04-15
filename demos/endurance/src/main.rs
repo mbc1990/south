@@ -25,7 +25,7 @@ pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
 pub const FPS: u32 = 30;
 pub const BOAT_SIZE: u32 = 25;
-pub const NUM_BERGS: i32 = 400;
+pub const NUM_BERGS: i32 = 1;
 pub const BERG_MIN_SIZE: u32 = 10;
 pub const BERG_MAX_SIZE: u32 = 75;
 pub const ICE_DECEL_FACTOR: f32 = 0.99;
@@ -71,12 +71,16 @@ fn main() -> Result<(), String> {
     let mut world = World::new(WIDTH, HEIGHT);
 
     world.init_test();
-    // world.init_with_random_ice(1);
+
+    // TODO: Can render 32x4, but 64x4 (18,432 bytes) segfaults
+    // world.init_with_random_ice(64);
+    println!("Done init?");
     unsafe {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
         gl::Clear(gl::COLOR_BUFFER_BIT);
     }
     world.draw_gl(&shader_program);
+    println!("Buffers all send over");
     window.gl_swap_window();
 
     // world.draw(&mut canvas);
@@ -86,6 +90,10 @@ fn main() -> Result<(), String> {
     let frame_length = 1000.0 / FPS as f32;
     'running: loop {
         let frame_start = Instant::now();
+        unsafe {
+            gl::ClearColor(0.6, 0.0, 0.8, 1.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
 
         let keyboard_state = input_manager.get_keyboard_state();
         if keyboard_state.esc {
@@ -95,6 +103,7 @@ fn main() -> Result<(), String> {
         world.tick(&keyboard_state);
         // world.draw_gl(&mut canvas);
         world.draw_gl(&shader_program);
+        window.gl_swap_window();
 
         let elapsed = frame_start.elapsed();
         if elapsed.as_millis() < frame_length as u128 {

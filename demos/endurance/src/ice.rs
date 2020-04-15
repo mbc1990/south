@@ -20,7 +20,7 @@ impl Ice {
 
     pub fn new(position: Vector, direction: Vector, size: u32) -> Ice {
 
-        let num_sides = 15;
+        let num_sides = 4;
         let mut rng = rand::thread_rng();
         let mut perimeter  =  Vec::new();
         let mut triangles = Vec::new();

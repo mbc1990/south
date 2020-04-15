@@ -84,7 +84,20 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        self.ices.push(Ice::new(Vector{x: 400.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
+        // TODO: 57x4 works (16,416 bytes)
+        // TODO: 58x4 segfaults (16,704 bytes)
+        // self.ices.push(Ice::new(Vector { x: 10.0 as f32 * 22.0, y: 10.0 }, Vector { x: 10.0, y: 0.0 }.mul(0.0), 10));
+        for i in 0..2 {
+            self.ices.push(Ice::new(Vector { x: 10.0 + i as f32 * 22.0, y: 10.0 }, Vector { x: 10.0, y: 0.0 }.mul(0.0), 10));
+        }
+
+        /*
+        // TODO: Works fine...
+        for i in 44..87{
+            self.ices.push(Ice::new(Vector { x: 10.0 + i as f32 * 22.0, y: 10.0 }, Vector { x: 10.0, y: 0.0 }.mul(0.0), 10));
+        }
+        */
+
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
@@ -271,34 +284,39 @@ impl World {
 
     pub fn draw_gl(&self, program: &Program) {
         let offset = self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
-        let mut vertices: Vec<f32>= Vec::new();
 
-        // TODO: This results in segfaults
+        // This is a vector of f32s, each group of six serially representing a vertex (xyz) and color info (rgb)
+        // Thus each group of eighteen (6*3) represents a triangle.
+        // I *think* that means we need to only arrays of data whose length is divisible by 18
+        let mut vertices: Vec<f32> = Vec::new();
         for berg in &self.ices {
             // berg.draw(canvas, &offset);
             let mut berg_verts = berg.get_vertices(&offset);
             vertices.append(&mut berg_verts);
+            /*
+            if vertices.len() == 18 {
+                break;
+            }
+            */
         }
 
+        let num_indices= vertices.len() as i32 / 6;
+
         /*
-        // TODO: This does *not* result in segfaults
-        let mut vertices: Vec<f32> = vec![
+        let vertices: Vec<f32> = vec![
             // positions      // colors
-            0.25, -0.5, 0.0,   1.0, 0.0, 0.0,   // bottom right
-            -0.75, -0.5, 0.0,  0.0, 1.0, 0.0,   // bottom left
-            -0.25,  0.5, 0.0,   0.0, 0.0, 1.0,    // top
-            0.75, -0.5, 0.0,   1.0, 0.0, 0.0,   // bottom right
-            -0.25, -0.5, 0.0,  0.0, 1.0, 0.0,   // bottom left
-            0.25,  0.5, 0.0,   0.0, 0.0, 1.0    // top
+            0.5, -0.5, 0.0, 1.0, 0.0, 0.0, // bottom right
+            -0.5, -0.5, 0.0, 0.0, 1.0, 0.0, // bottom left
+            0.0, 0.5, 0.0, 0.0, 0.0, 1.0, // top
         ];
         */
 
         let mut vbo: gl::types::GLuint = 0;
-        let mut vao: gl::types::GLuint = 0;
-        let num_verts = vertices.len();
         unsafe {
-            gl::GenBuffers((vertices.len()  / 18) as i32, &mut vbo);
-            // gl::GenBuffers(1, &mut vbo);
+            gl::GenBuffers(1, &mut vbo);
+        }
+
+        unsafe {
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
             gl::BufferData(
                 gl::ARRAY_BUFFER,                                                       // target
@@ -307,9 +325,16 @@ impl World {
                 gl::STATIC_DRAW,                               // usage
             );
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-            gl::GenVertexArrays((vertices.len() / 18) as i32, &mut vao);
-            // gl::GenVertexArrays(1, &mut vao);
+        }
 
+        // set up vertex array object
+
+        let mut vao: gl::types::GLuint = 0;
+        unsafe {
+            gl::GenVertexArrays(1, &mut vao);
+        }
+
+        unsafe {
             gl::BindVertexArray(vao);
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
 
@@ -331,17 +356,111 @@ impl World {
                 (6 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
                 (3 * std::mem::size_of::<f32>()) as *const gl::types::GLvoid, // offset of the first component
             );
+
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
             gl::BindVertexArray(0);
+        }
 
-            program.set_used();
+        unsafe {
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+
+        // draw triangle
+        program.set_used();
+        unsafe {
             gl::BindVertexArray(vao);
             gl::DrawArrays(
                 gl::TRIANGLES, // mode
                 0,             // starting index in the enabled arrays
-                3 * vertices.len() as i32,             // number of indices to be rendered
+                num_indices,             // number of indices to be rendered
             );
         }
+
+        /*
+        let mut vbo: gl::types::GLuint = 0;
+        let mut vao: gl::types::GLuint = 0;
+
+        // This is num_sides * 3 * 2
+        let num_verts = vertices.len();
+
+        let bufsize = vertices.len() * std::mem::size_of::<f32>();
+        println!("Size: {:?}", bufsize);
+        unsafe {
+            // TODO: This number is WRONG. Increasing it by multiples of 3 increases the number of shapes before segfault kicks in
+            let num_buffers = vertices.len() as i32 / 30;
+            gl::GenBuffers(num_buffers, &mut vbo); // TODO: Why does this mutate mn?
+            println!("1");
+            // gl::GenBuffers(1, &mut vbo);
+            gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+            println!("2");
+            gl::BufferData(
+                gl::ARRAY_BUFFER,                                                       // target
+                (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
+                vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
+                gl::STATIC_DRAW,                               // usage
+            );
+            println!("3");
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+            println!("4");
+            // TODO: This is "1" in the draw-one-triangle tutorial
+            gl::GenVertexArrays(num_buffers, &mut vao);
+            println!("num buffers: {:?}", num_buffers);
+            println!("5");
+            // gl::GenVertexArrays(1, &mut vao);
+
+            gl::BindVertexArray(vao);
+            println!("6");
+            gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+            println!("7");
+
+            gl::EnableVertexAttribArray(0); // this is "layout (location = 0)" in vertex shader
+            gl::VertexAttribPointer(
+                0,         // index of the generic vertex attribute ("layout (location = 0)")
+                3,         // the number of components per generic vertex attribute
+                gl::FLOAT, // data type
+                gl::FALSE, // normalized (int-to-float conversion)
+                (6 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
+                std::ptr::null(),                                     // offset of the first component
+            );
+            gl::EnableVertexAttribArray(1); // this is "layout (location = 0)" in vertex shader
+            gl::VertexAttribPointer(
+                1,         // index of the generic vertex attribute ("layout (location = 0)")
+                3,         // the number of components per generic vertex attribute
+                gl::FLOAT, // data type
+                gl::FALSE, // normalized (int-to-float conversion)
+                (6 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
+                (3 * std::mem::size_of::<f32>()) as *const gl::types::GLvoid, // offset of the first component
+            );
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+            println!("8");
+            gl::BindVertexArray(0);
+
+            program.set_used();
+            gl::BindVertexArray(vao);
+            println!("9");
+
+            // Draw batch size triangles at once
+            let batch_size = 6;
+            let num_batches = vertices.len() as i32 / batch_size;
+            for i in 0..num_batches {
+                let batch_start = batch_size * i;
+                gl::DrawArrays(
+                    gl::TRIANGLES, // mode
+                    batch_start,             // starting index in the enabled arrays
+                    batch_size,             // number of indices to be rendered
+                );
+                // println!("10 {:?}", i);
+                /*
+                gl::DrawArrays(
+                    gl::TRIANGLES, // mode
+                    0,             // starting index in the enabled arrays
+                    3 * vertices.len() as i32,             // number of indices to be rendered
+                );
+                */
+            }
+            println!("11");
+        }
+        */
 
 
         // TODO: Now we have the properly structured vertices for all the berg triangles
