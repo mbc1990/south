@@ -148,12 +148,13 @@ impl World {
         }
     }
 
+    // TODO: This is ridiculously inefficient
     fn get_grid_region_bergs(grid: &HashMap<i32, HashMap<i32, Vec<Ice>>>, grid_x: i32, grid_y: i32) -> Vec<Ice> {
         let mut in_grid = Vec::new();
         if let Some(col) = grid.get(&grid_x) {
             if let Some(bergs) = col.get(&grid_y) {
-                let to_append = bergs.clone();
-                in_grid.append(&mut to_append.clone());
+                let mut to_append = bergs.clone();
+                in_grid.append(&mut to_append);
             }
         }
         return in_grid;

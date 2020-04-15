@@ -25,7 +25,7 @@ pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
 pub const FPS: u32 = 30;
 pub const BOAT_SIZE: u32 = 25;
-pub const NUM_BERGS: i32 = 500;
+pub const NUM_BERGS: i32 = 2048;
 pub const BERG_MIN_SIZE: u32 = 10;
 pub const BERG_MAX_SIZE: u32 = 75;
 pub const ICE_DECEL_FACTOR: f32 = 0.99;
@@ -101,6 +101,7 @@ fn main() -> Result<(), String> {
         if elapsed.as_millis() < frame_length as u128 {
             thread::sleep(time::Duration::from_millis((frame_length - elapsed.as_millis() as f32) as u64));
         }
+        println!("FPS: {:}", 1000.0 / frame_start.elapsed().as_millis() as f32)
     }
     Ok(())
 }
