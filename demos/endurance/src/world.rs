@@ -69,7 +69,7 @@ impl World {
             let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:dir_x, y:dir_y}.mul(vel), berg_size);
 
             // let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:0.0, y:0.0}, berg_size);
-            let collisions = World::find_collisions(&self.ices, &berg);
+            let collisions = World::find_collisions_init(&self.ices, &berg);
 
             if euc_distance(&self.boat.position, &berg.position) < (self.boat.size * 3 + *&berg.size) as f32 {
                continue;
@@ -89,8 +89,18 @@ impl World {
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }
 
-    fn find_collisions<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
+    fn find_collisions<'a>(ices: Vec<&'a Ice>, ice: &Ice) -> Vec<&'a Ice> {
         let collisions = ices.iter()
+            .filter(|other_ice| euc_distance(&other_ice.position, &ice.position) < (other_ice.size + ice.size) as f32)
+            .filter(|other_ice| &other_ice.position != &ice.position)
+            .map(|other_ice| *other_ice)
+            .collect();
+        return collisions;
+    }
+
+    // TODO: Refactor this - quick fix for random berg init
+    fn find_collisions_init<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
+            let collisions = ices.iter()
             .filter(|other_ice| euc_distance(&other_ice.position, &ice.position) < (other_ice.size + ice.size) as f32)
             .filter(|other_ice| &other_ice.position != &ice.position)
             .collect();
@@ -148,13 +158,13 @@ impl World {
         }
     }
 
-    // TODO: This is ridiculously inefficient
-    fn get_grid_region_bergs(grid: &HashMap<i32, HashMap<i32, Vec<Ice>>>, grid_x: i32, grid_y: i32) -> Vec<Ice> {
+    fn get_grid_region_bergs(grid: &HashMap<i32, HashMap<i32, Vec<Ice>>>, grid_x: i32, grid_y: i32) -> Vec<&Ice> {
         let mut in_grid = Vec::new();
         if let Some(col) = grid.get(&grid_x) {
             if let Some(bergs) = col.get(&grid_y) {
-                let mut to_append = bergs.clone();
-                in_grid.append(&mut to_append);
+                for berg in bergs {
+                    in_grid.push(berg);
+                }
             }
         }
         return in_grid;
@@ -189,9 +199,9 @@ impl World {
             let (grid_x, grid_y) = ice.calc_grid();
 
             // Colocated bergs - hopefully only a few
-            let others_in_grid = World::get_grid_region_bergs(&grid, grid_x, grid_y);
-            let mut possible_collisions = Vec::new();
-            possible_collisions.append(&mut others_in_grid.clone());
+            let mut possible_collisions = World::get_grid_region_bergs(&grid, grid_x, grid_y);
+            // let mut possible_collisions = Vec::new();
+            // possible_collisions.append(&mut others_in_grid.clone());
 
             // Grid regions are squares, so the berg can be colliding with objects in up to three
             // more grid regions adjacent to the one the center of the berg is in.
@@ -245,7 +255,7 @@ impl World {
             }
 
             // Collisions from circular bounding box
-            let collisions = World::find_collisions(&possible_collisions, &ice);
+            let collisions = World::find_collisions(possible_collisions, &ice);
             for collision in collisions {
 
                 // Don't collide with yourself
