@@ -290,6 +290,9 @@ impl World {
             vertices.append(&mut berg_verts);
         }
 
+        let mut boat_verts = self.boat.get_vertices(&offset);
+        vertices.append(&mut boat_verts);
+
         let num_indices= vertices.len() as i32 / 6;
 
         let mut vbo: gl::types::GLuint = 0;
@@ -357,7 +360,7 @@ impl World {
         }
 
         // TODO: Draw boat with opengl
-        self.boat.draw_gl();
+        // self.boat.draw_gl(program);
 
     }
 }

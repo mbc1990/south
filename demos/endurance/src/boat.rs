@@ -3,6 +3,9 @@ use sdl2::render::{WindowCanvas};
 use sdl2::pixels::Color;
 use crate::vector::{Vector};
 use sdl2::gfx::primitives::DrawRenderer;
+use crate::render_gl::Program;
+use sdl2::ttf::get_linked_version;
+use crate::{HEIGHT, WIDTH};
 
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
@@ -51,7 +54,64 @@ impl Boat {
         self.perimeter.push(Vector{x: l6_p1_x, y: l6_p1_y});
     }
 
-    pub fn draw_gl(&self) {
+    pub fn get_vertices(&self, offset: &Vector) -> Vec<f32> {
+        let mut ret = Vec::new();
+
+        // TODO: Can be refactored out
+        let mut trigons = Vec::new();
+
+        let mut bow = Vec::new();
+
+        let l1_p1_x  = 0.0 - (self.size * 1) as f32;
+        let l1_p1_y  = 0.0 - (self.size * 1) as f32;
+        bow.push(Vector{x: l1_p1_x, y: l1_p1_y});
+
+        let l1_p2_x = 0.0;
+        let l1_p2_y = 0.0 - (self.size * 3) as f32;
+        bow.push(Vector{x: l1_p2_x, y: l1_p2_y});
+
+        let l2_p1_x  = (self.size * 1) as f32;
+        let l2_p1_y  = 0.0 - (self.size * 1) as f32;
+        bow.push(Vector{x: l2_p1_x, y: l2_p1_y});
+
+        trigons.push(bow);
+
+        // TODO: Can be refactored - logic mostly duplicated from iceberg vertex conversion
+        for trigon in trigons {
+            for vertex in trigon {
+
+                // Offset-adjusted points (position relative to an origin in the upper left corner of the visible screen)
+                let pos_x = vertex.x + self.position.x - offset.x;
+                let mut pos_y = vertex.y + self.position.y - offset.y;
+                let pos_z = 0.0;
+
+
+                // NDC System has bottom left origin, so adjust our y value (top left origin) into that system
+                pos_y = HEIGHT as f32 - pos_y;
+
+                // Map these points into the normalized device coordinates space
+                let input_range = WIDTH as f32;
+                let output_range = 1.0 - -1.0;
+                let output_x = (pos_x - 0.0)*output_range / input_range + -1.0;
+
+                let input_range = HEIGHT as f32;
+                let output_range = 1.0 - -1.0;
+                let output_y = (pos_y - 0.0)*output_range / input_range + -1.0;
+                ret.push(output_x);
+                ret.push(output_y);
+                ret.push(pos_z);
+
+                // Colors
+                ret.push(0.0);
+                ret.push(0.0);
+                ret.push(1.0);
+            }
+        }
+        return ret;
+    }
+
+    pub fn draw_gl(&self, program: &Program) {
+        // let vertices = self.get_vertices();
 
     }
 
