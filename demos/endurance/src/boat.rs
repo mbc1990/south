@@ -103,6 +103,21 @@ impl Boat {
         mid_left.push(Vector{x: p3x, y: p3y});
         trigons.push(mid_left);
 
+        // (Temporary) rear triangle
+        let mut rear = Vec::new();
+        let p1x = 0.0 - (self.size * 1) as f32;
+        let p1y = 0.0 + (self.size * 1) as f32;
+        rear.push(Vector{x: p1x, y: p1y});
+
+        let p2x = 0.0 + (self.size * 1) as f32;
+        let p2y = 0.0 + (self.size * 1) as f32;
+        rear.push(Vector{x: p2x, y: p2y});
+
+        let p3x = 0.0;
+        let p3y = 0.0 + self.size as f32 * 1.5;
+        rear.push(Vector{x: p3x, y: p3y});
+        trigons.push(rear);
+
 
         // TODO: Can be refactored - logic mostly duplicated from iceberg vertex conversion
         for trigon in trigons {
