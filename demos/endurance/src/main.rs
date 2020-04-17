@@ -23,13 +23,13 @@ pub mod render_gl;
 
 pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
-pub const FPS: u32 = 30;
+pub const FPS: u32 = 60;
 pub const BOAT_SIZE: u32 = 25;
-pub const NUM_BERGS: i32 = 2048;
-pub const BERG_MIN_SIZE: u32 = 10;
+pub const NUM_BERGS: i32 = 1024 * 4;
+pub const BERG_MIN_SIZE: u32 = 8;
 pub const BERG_MAX_SIZE: u32 = 75;
 pub const ICE_DECEL_FACTOR: f32 = 0.99;
-pub const BOAT_ACCELERATION: f32 = 0.2;
+pub const BOAT_ACCELERATION: f32 = 0.1;
 pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";
 pub const DEBUG_MODE: bool = false;
 pub const GRID_SIZE: u32 = 2 * BERG_MAX_SIZE + 10;
@@ -44,7 +44,7 @@ fn main() -> Result<(), String> {
     gl_attr.set_context_version(4, 1);
 
     let window = video_subsystem
-        .window("Game", WIDTH, HEIGHT)
+        .window("Shackleton", WIDTH, HEIGHT)
         .opengl()
         .resizable()
         .build()

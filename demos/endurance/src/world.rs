@@ -78,7 +78,7 @@ impl World {
             if collisions.len() == 0 {
                 self.ices.push(berg);
                 num_bergs -= 1;
-                // println!("{:?} bergs remaining", num_bergs);
+                println!("{:?} bergs remaining", num_bergs);
             }
         }
     }
