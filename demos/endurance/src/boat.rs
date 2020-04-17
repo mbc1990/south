@@ -57,24 +57,52 @@ impl Boat {
     pub fn get_vertices(&self, offset: &Vector) -> Vec<f32> {
         let mut ret = Vec::new();
 
-        // TODO: Can be refactored out
+        // The boat, like the icebergs, is composed of triangles
+
+        // Bow
         let mut trigons = Vec::new();
-
         let mut bow = Vec::new();
-
         let l1_p1_x  = 0.0 - (self.size * 1) as f32;
         let l1_p1_y  = 0.0 - (self.size * 1) as f32;
         bow.push(Vector{x: l1_p1_x, y: l1_p1_y});
-
         let l1_p2_x = 0.0;
         let l1_p2_y = 0.0 - (self.size * 3) as f32;
         bow.push(Vector{x: l1_p2_x, y: l1_p2_y});
-
         let l2_p1_x  = (self.size * 1) as f32;
         let l2_p1_y  = 0.0 - (self.size * 1) as f32;
         bow.push(Vector{x: l2_p1_x, y: l2_p1_y});
-
         trigons.push(bow);
+
+        // Main body/middle section - right side
+        let mut mid_right = Vec::new();
+        let p1x = 0.0 - (self.size * 1) as f32;
+        let p1y = 0.0 - (self.size * 1) as f32;
+        mid_right.push(Vector{x: p1x, y: p1y});
+
+        let p2x = 0.0 + (self.size * 1) as f32;
+        let p2y = 0.0 + (self.size * 1) as f32;
+        mid_right.push(Vector{x: p2x, y: p2y});
+
+        let p3x= (self.size * 1) as f32;
+        let p3y= 0.0 - (self.size * 1) as f32;
+        mid_right.push(Vector{x: p3x, y: p3y});
+        trigons.push(mid_right);
+
+        // Main body/middle section - left side
+        let mut mid_left = Vec::new();
+        let p1x = 0.0 - (self.size * 1) as f32;
+        let p1y = 0.0 - (self.size * 1) as f32;
+        mid_left.push(Vector{x: p1x, y: p1y});
+
+        let p2x = 0.0 - (self.size * 1) as f32;
+        let p2y = 0.0 + (self.size * 1) as f32;
+        mid_left.push(Vector{x: p2x, y: p2y});
+
+        let p3x= (self.size * 1) as f32;
+        let p3y= 0.0 + (self.size * 1) as f32;
+        mid_left.push(Vector{x: p3x, y: p3y});
+        trigons.push(mid_left);
+
 
         // TODO: Can be refactored - logic mostly duplicated from iceberg vertex conversion
         for trigon in trigons {
@@ -110,6 +138,7 @@ impl Boat {
         return ret;
     }
 
+    // TODO: Delete
     pub fn draw_gl(&self, program: &Program) {
         // let vertices = self.get_vertices();
 
