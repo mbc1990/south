@@ -94,9 +94,9 @@ impl Ice {
                 ret.push(pos_z);
 
                 // Colors
-                ret.push(0.0);
-                ret.push(1.0);
-                ret.push(0.0);
+                ret.push(0.878);
+                ret.push(0.882);
+                ret.push(0.901);
             }
         }
         return ret;

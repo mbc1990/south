@@ -73,18 +73,12 @@ fn main() -> Result<(), String> {
     let mut world = World::new(WIDTH, HEIGHT);
     // world.init_test();
     world.init_with_random_ice(NUM_BERGS);
-    unsafe {
-        gl::ClearColor(0.3, 0.3, 0.5, 1.0);
-        gl::Clear(gl::COLOR_BUFFER_BIT);
-    }
-    world.draw_gl(&shader_program);
-    window.gl_swap_window();
 
     let frame_length = 1000.0 / FPS as f32;
     'running: loop {
         let frame_start = Instant::now();
         unsafe {
-            gl::ClearColor(0.6, 0.0, 0.8, 1.0);
+            gl::ClearColor(0.156, 0.298, 0.823, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 

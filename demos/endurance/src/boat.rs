@@ -145,9 +145,10 @@ impl Boat {
                 ret.push(pos_z);
 
                 // Colors
-                ret.push(0.0);
-                ret.push(0.0);
-                ret.push(1.0);
+                // 0.239, 0.172, 0.062
+                ret.push(0.239);
+                ret.push(0.172);
+                ret.push(0.062);
             }
         }
         return ret;

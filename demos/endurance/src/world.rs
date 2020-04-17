@@ -343,10 +343,11 @@ impl World {
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
             gl::BindVertexArray(0);
         }
-
+        /*
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
+        */
 
         // draw triangle
         program.set_used();
