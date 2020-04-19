@@ -3,6 +3,9 @@ use sdl2::render::{WindowCanvas};
 use sdl2::pixels::Color;
 use crate::vector::{Vector};
 use sdl2::gfx::primitives::DrawRenderer;
+use crate::render_gl::Program;
+use sdl2::ttf::get_linked_version;
+use crate::{HEIGHT, WIDTH};
 
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
@@ -21,6 +24,7 @@ impl Boat {
         return boat;
     }
 
+    // TODO: No longer matches graphic boat
     fn init_perimeter(&mut self) {
         let l1_p1_x  = 0.0 - (self.size * 1) as f32;
         let l1_p1_y  = 0.0 - (self.size * 1) as f32;
@@ -51,59 +55,103 @@ impl Boat {
         self.perimeter.push(Vector{x: l6_p1_x, y: l6_p1_y});
     }
 
-    pub fn draw(&self, canvas: &mut WindowCanvas, offset: &Vector) {
-        canvas.set_draw_color(Color::RGB(213, 183, 143));
+    pub fn get_vertices(&self, offset: &Vector) -> Vec<f32> {
+        let mut ret = Vec::new();
 
-        let offset_position = self.position.sub(offset);
-        let mut xs: Vec<i16> = Vec::new();
-        let mut ys: Vec<i16> = Vec::new();
+        // The boat, like the icebergs, is composed of triangles
 
-        for pt in self.perimeter.iter() {
-            xs.push((offset_position.x + pt.x) as i16) ;
-            ys.push((offset_position.y + pt.y) as i16) ;
+        // Bow
+        let mut trigons = Vec::new();
+        let mut bow = Vec::new();
+        let l1_p1_x  = 0.0 - (self.size * 1) as f32;
+        let l1_p1_y  = 0.0 - (self.size * 1) as f32;
+        bow.push(Vector{x: l1_p1_x, y: l1_p1_y});
+        let l1_p2_x = 0.0;
+        let l1_p2_y = 0.0 - (self.size * 3) as f32;
+        bow.push(Vector{x: l1_p2_x, y: l1_p2_y});
+        let l2_p1_x  = (self.size * 1) as f32;
+        let l2_p1_y  = 0.0 - (self.size * 1) as f32;
+        bow.push(Vector{x: l2_p1_x, y: l2_p1_y});
+        trigons.push(bow);
+
+        // Main body/middle section - right side
+        let mut mid_right = Vec::new();
+        let p1x = 0.0 - (self.size * 1) as f32;
+        let p1y = 0.0 - (self.size * 1) as f32;
+        mid_right.push(Vector{x: p1x, y: p1y});
+
+        let p2x = 0.0 + (self.size * 1) as f32;
+        let p2y = 0.0 + (self.size * 1) as f32;
+        mid_right.push(Vector{x: p2x, y: p2y});
+
+        let p3x= (self.size * 1) as f32;
+        let p3y= 0.0 - (self.size * 1) as f32;
+        mid_right.push(Vector{x: p3x, y: p3y});
+        trigons.push(mid_right);
+
+        // Main body/middle section - left side
+        let mut mid_left = Vec::new();
+        let p1x = 0.0 - (self.size * 1) as f32;
+        let p1y = 0.0 - (self.size * 1) as f32;
+        mid_left.push(Vector{x: p1x, y: p1y});
+
+        let p2x = 0.0 - (self.size * 1) as f32;
+        let p2y = 0.0 + (self.size * 1) as f32;
+        mid_left.push(Vector{x: p2x, y: p2y});
+
+        let p3x= (self.size * 1) as f32;
+        let p3y= 0.0 + (self.size * 1) as f32;
+        mid_left.push(Vector{x: p3x, y: p3y});
+        trigons.push(mid_left);
+
+        // (Temporary) rear triangle
+        let mut rear = Vec::new();
+        let p1x = 0.0 - (self.size * 1) as f32;
+        let p1y = 0.0 + (self.size * 1) as f32;
+        rear.push(Vector{x: p1x, y: p1y});
+
+        let p2x = 0.0 + (self.size * 1) as f32;
+        let p2y = 0.0 + (self.size * 1) as f32;
+        rear.push(Vector{x: p2x, y: p2y});
+
+        let p3x = 0.0;
+        let p3y = 0.0 + self.size as f32 * 1.5;
+        rear.push(Vector{x: p3x, y: p3y});
+        trigons.push(rear);
+
+
+        // TODO: Can be refactored - logic mostly duplicated from iceberg vertex conversion
+        for trigon in trigons {
+            for vertex in trigon {
+
+                // Offset-adjusted points (position relative to an origin in the upper left corner of the visible screen)
+                let pos_x = vertex.x + self.position.x - offset.x;
+                let mut pos_y = vertex.y + self.position.y - offset.y;
+                let pos_z = 0.0;
+
+                // NDC System has bottom left origin, so adjust our y value (top left origin) into that system
+                pos_y = HEIGHT as f32 - pos_y;
+
+                // Map these points into the normalized device coordinates space
+                let input_range = WIDTH as f32;
+                let output_range = 1.0 - -1.0;
+                let output_x = (pos_x - 0.0)*output_range / input_range + -1.0;
+
+                let input_range = HEIGHT as f32;
+                let output_range = 1.0 - -1.0;
+                let output_y = (pos_y - 0.0)*output_range / input_range + -1.0;
+                ret.push(output_x);
+                ret.push(output_y);
+                ret.push(pos_z);
+
+                // Colors
+                // 0.239, 0.172, 0.062
+                ret.push(0.239);
+                ret.push(0.172);
+                ret.push(0.062);
+            }
         }
-
-        let _ = canvas.filled_polygon(&xs, &ys, Color::RGB(213, 183, 143));
-
-        // Deck bow deck structure
-        let mut recs = Vec::new();
-        recs.push(Rect::from(((offset_position.x - (self.size/ 2) as f32) as i32, (offset_position.y - (self.size as f32 * 1.75) )as i32, self.size, self.size*2)));
-        recs.push(Rect::from(((offset_position.x - (self.size/ 2) as f32) as i32, (offset_position.y + self.size as f32 / 2.0) as i32, self.size, self.size)));
-
-        canvas.set_draw_color(Color::RGB(148, 101, 37));
-        let _ = canvas.draw_rects(&recs);
-
-
-        // Sails
-        canvas.set_draw_color(Color::RGB(216, 223, 235));
-
-        // Front sail
-        let l8_p1_x = offset_position.x - ((self.size) + (self.size/2)) as f32;
-        let l8_p1_y = offset_position.y - (self.size + (self.size / 2)) as f32;
-        let l8_p1 = Point::new(l8_p1_x as i32, l8_p1_y as i32);
-        let l8_p2_x = offset_position.x + ((self.size) + (self.size/2)) as f32;
-        let l8_p2_y = offset_position.y - (self.size + (self.size / 2)) as f32;
-        let l8_p2 = Point::new(l8_p2_x as i32, l8_p2_y as i32);
-        let _ = canvas.draw_line(l8_p1, l8_p2);
-
-        // Middle sail
-        let l9_p1_x = offset_position.x - ((self.size) + (self.size)) as f32;
-        let l9_p1_y = offset_position.y;
-        let l9_p1 = Point::new(l9_p1_x as i32, l9_p1_y as i32);
-        let l9_p2_x = offset_position.x + ((self.size) + (self.size)) as f32;
-        let l9_p2_y = offset_position.y;
-        let l9_p2 = Point::new(l9_p2_x as i32, l9_p2_y as i32);
-        let _ = canvas.draw_line(l9_p1, l9_p2);
-
-        // Back sail
-        let l10_p1_x = offset_position.x - ((self.size) + (self.size/2)) as f32;
-        let l10_p1_y = offset_position.y + (self.size + (self.size / 2)) as f32;
-        let l10_p1 = Point::new(l10_p1_x as i32, l10_p1_y as i32);
-        let l10_p2_x = offset_position.x + ((self.size) + (self.size/2)) as f32;
-        let l10_p2_y = offset_position.y + (self.size + (self.size / 2)) as f32;
-        let l10_p2 = Point::new(l10_p2_x as i32, l10_p2_y as i32);
-        let _ = canvas.draw_line(l10_p1, l10_p2);
+        return ret;
     }
-
 }
 

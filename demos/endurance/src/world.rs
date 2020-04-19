@@ -8,6 +8,7 @@ use crate::keyboard_state::KeyboardState;
 use std::collections::HashMap;
 use crate::geometry::{reflect, lines_intersect, euc_distance};
 use std::time::Instant;
+use crate::render_gl::Program;
 
 pub struct World {
     size_x: u32,
@@ -68,7 +69,7 @@ impl World {
             let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:dir_x, y:dir_y}.mul(vel), berg_size);
 
             // let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:0.0, y:0.0}, berg_size);
-            let collisions = World::find_collisions(&self.ices, &berg);
+            let collisions = World::find_collisions_init(&self.ices, &berg);
 
             if euc_distance(&self.boat.position, &berg.position) < (self.boat.size * 3 + *&berg.size) as f32 {
                continue;
@@ -77,21 +78,29 @@ impl World {
             if collisions.len() == 0 {
                 self.ices.push(berg);
                 num_bergs -= 1;
-                // println!("{:?} bergs remaining", num_bergs);
+                println!("{:?} bergs remaining", num_bergs);
             }
         }
     }
 
-    /*
     pub fn init_test(&mut self) {
-        self.ices.push(Ice::new(Vector{x: 800.0, y: 100.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
+        self.ices.push(Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }
-    */
 
-    fn find_collisions<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
+    fn find_collisions<'a>(ices: Vec<&'a Ice>, ice: &Ice) -> Vec<&'a Ice> {
         let collisions = ices.iter()
+            .filter(|other_ice| euc_distance(&other_ice.position, &ice.position) < (other_ice.size + ice.size) as f32)
+            .filter(|other_ice| &other_ice.position != &ice.position)
+            .map(|other_ice| *other_ice)
+            .collect();
+        return collisions;
+    }
+
+    // TODO: Refactor this - quick fix for random berg init
+    fn find_collisions_init<'a>(ices: &'a Vec<Ice>, ice: &Ice) -> Vec<&'a Ice> {
+            let collisions = ices.iter()
             .filter(|other_ice| euc_distance(&other_ice.position, &ice.position) < (other_ice.size + ice.size) as f32)
             .filter(|other_ice| &other_ice.position != &ice.position)
             .collect();
@@ -149,12 +158,13 @@ impl World {
         }
     }
 
-    fn get_grid_region_bergs(grid: &HashMap<i32, HashMap<i32, Vec<Ice>>>, grid_x: i32, grid_y: i32) -> Vec<Ice> {
+    fn get_grid_region_bergs(grid: &HashMap<i32, HashMap<i32, Vec<Ice>>>, grid_x: i32, grid_y: i32) -> Vec<&Ice> {
         let mut in_grid = Vec::new();
         if let Some(col) = grid.get(&grid_x) {
             if let Some(bergs) = col.get(&grid_y) {
-                let to_append = bergs.clone();
-                in_grid.append(&mut to_append.clone());
+                for berg in bergs {
+                    in_grid.push(berg);
+                }
             }
         }
         return in_grid;
@@ -189,9 +199,9 @@ impl World {
             let (grid_x, grid_y) = ice.calc_grid();
 
             // Colocated bergs - hopefully only a few
-            let others_in_grid = World::get_grid_region_bergs(&grid, grid_x, grid_y);
-            let mut possible_collisions = Vec::new();
-            possible_collisions.append(&mut others_in_grid.clone());
+            let mut possible_collisions = World::get_grid_region_bergs(&grid, grid_x, grid_y);
+            // let mut possible_collisions = Vec::new();
+            // possible_collisions.append(&mut others_in_grid.clone());
 
             // Grid regions are squares, so the berg can be colliding with objects in up to three
             // more grid regions adjacent to the one the center of the berg is in.
@@ -245,7 +255,7 @@ impl World {
             }
 
             // Collisions from circular bounding box
-            let collisions = World::find_collisions(&possible_collisions, &ice);
+            let collisions = World::find_collisions(possible_collisions, &ice);
             for collision in collisions {
 
                 // Don't collide with yourself
@@ -269,11 +279,89 @@ impl World {
         return self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
     }
 
-    pub fn draw(&self, canvas: &mut WindowCanvas) {
+    pub fn draw_gl(&self, program: &Program) {
         let offset = self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
+
+        // This is a vector of f32s, each group of six serially representing a vertex (xyz) and color info (rgb)
+        // Thus each group of eighteen (6*3) represents a triangle.
+        let mut vertices: Vec<f32> = Vec::new();
         for berg in &self.ices {
-            berg.draw(canvas, &offset);
+            let mut berg_verts = berg.get_vertices(&offset);
+            vertices.append(&mut berg_verts);
         }
-        self.boat.draw(canvas, &offset);
+
+        let mut boat_verts = self.boat.get_vertices(&offset);
+        vertices.append(&mut boat_verts);
+
+        let num_indices= vertices.len() as i32 / 6;
+
+        let mut vbo: gl::types::GLuint = 0;
+        unsafe {
+            gl::GenBuffers(1, &mut vbo);
+        }
+
+        unsafe {
+            gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+            gl::BufferData(
+                gl::ARRAY_BUFFER,                                                       // target
+                (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
+                vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
+                gl::STATIC_DRAW,                               // usage
+            );
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        }
+
+        // set up vertex array object
+        let mut vao: gl::types::GLuint = 0;
+        unsafe {
+            gl::GenVertexArrays(1, &mut vao);
+        }
+
+        unsafe {
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+
+            gl::EnableVertexAttribArray(0); // this is "layout (location = 0)" in vertex shader
+            gl::VertexAttribPointer(
+                0,         // index of the generic vertex attribute ("layout (location = 0)")
+                3,         // the number of components per generic vertex attribute
+                gl::FLOAT, // data type
+                gl::FALSE, // normalized (int-to-float conversion)
+                (6 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
+                std::ptr::null(),                                     // offset of the first component
+            );
+            gl::EnableVertexAttribArray(1); // this is "layout (location = 0)" in vertex shader
+            gl::VertexAttribPointer(
+                1,         // index of the generic vertex attribute ("layout (location = 0)")
+                3,         // the number of components per generic vertex attribute
+                gl::FLOAT, // data type
+                gl::FALSE, // normalized (int-to-float conversion)
+                (6 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
+                (3 * std::mem::size_of::<f32>()) as *const gl::types::GLvoid, // offset of the first component
+            );
+
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+            gl::BindVertexArray(0);
+        }
+        /*
+        unsafe {
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+        */
+
+        // draw triangle
+        program.set_used();
+        unsafe {
+            gl::BindVertexArray(vao);
+            gl::DrawArrays(
+                gl::TRIANGLES, // mode
+                0,             // starting index in the enabled arrays
+                num_indices,             // number of indices to be rendered
+            );
+        }
+
+        // TODO: Draw boat with opengl
+        // self.boat.draw_gl(program);
+
     }
 }
