@@ -25,21 +25,15 @@ impl World {
         World{size_x, size_y, ices: ice, boat: boat}
     }
 
-    // TODO: Make these controls more rudder-like (boat rotates)
+    // TODO: This should actually multiply an acceleration scalar with the current direction
     pub fn key_w(&mut self) {
         let dir = Vector{x:0.0, y:-1.0};
         self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
     }
 
-    // TODO: Rotation
+    // TODO: Rotate direction left
+    // TODO: Right now direction is both velocity and rotation
     pub fn key_a(&mut self) {
-        /*
-        theta = deg2rad(angle);
-        cs = cos(theta);
-        sn = sin(theta);
-        px = x * cs - y * sn;
-        py = x * sn + y * cs;
-        */
         let dir = Vector{x:-1.0, y:0.0};
         self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
     }
@@ -48,7 +42,7 @@ impl World {
         // TODO: Constants for keyboard input magic numbers
         self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
     }
-    // TODO: Rotation
+    // TODO: Rotate direction right
     pub fn key_d(&mut self) {
         let dir = Vector{x:1.0, y:0.0};
         self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
@@ -84,7 +78,7 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        self.ices.push(Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
+        self.ices.push(Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 50));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }

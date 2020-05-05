@@ -68,6 +68,18 @@ pub fn euc_distance(p1: &Vector, p2: &Vector) -> f32 {
     (((p1.x - p2.x).powf(2.0) + (p1.y - p2.y).powf(2.0)) as f32).sqrt()
 }
 
+pub fn rotate_point(p1: &Vector, origin: &Vector, amount_rads: f32) -> Vector {
+    let degs = amount_rads * (180.0 / std::f32::consts::PI);
+    println!("Rotating by {:?} degrees", degs);
+    // p'x = cos(theta) * (px-ox) - sin(theta) * (py-oy) + ox
+    let px_rot = degs.cos() * (p1.x - origin.x) - degs.sin() * (p1.y - origin.y) + origin.x;
+    // p'y = sin(theta) * (px-ox) + cos(theta) * (py-oy) + oy
+    let py_rot = degs.sin() * (p1.x - origin.x) + degs.cos() * (p1.y - origin.y) + origin.y;
+    let ret = Vector{x: px_rot, y: py_rot};
+    println!("Rotated vector: {:?}", ret);
+    return ret;
+}
+
 
 // TODO: We need to include the object (boat perimeter segment) velocity somehow
 /*

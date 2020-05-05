@@ -6,6 +6,7 @@ use sdl2::gfx::primitives::DrawRenderer;
 use crate::render_gl::Program;
 use sdl2::ttf::get_linked_version;
 use crate::{HEIGHT, WIDTH};
+use crate::geometry::rotate_point;
 
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
@@ -19,7 +20,7 @@ pub struct Boat {
 impl Boat {
 
     pub fn new(position: Vector , size: u32) -> Boat {
-        let mut boat = Boat{direction: Vector{x: 0.0, y: -0.0}, position, size, perimeter: vec![] };
+        let mut boat = Boat{direction: Vector{x: 0.0, y: -1.0}, position, size, perimeter: vec![] };
         boat.init_perimeter();
         return boat;
     }
@@ -55,23 +56,40 @@ impl Boat {
         self.perimeter.push(Vector{x: l6_p1_x, y: l6_p1_y});
     }
 
+    // TODO: Rotate model here?
     pub fn get_vertices(&self, offset: &Vector) -> Vec<f32> {
         let mut ret = Vec::new();
 
         // The boat, like the icebergs, is composed of triangles
+        // We get the angle between the boat's direction and the y axis, then rotate all the triangles by that much
+        let y_axis = Vector{x:0.0, y:-1.0};
+        let numerator = y_axis.dot(&self.direction);
+        let denominator = y_axis.mag() * self.direction.mag();
+        let cos_theta = numerator / denominator;
+        let angle_rads= cos_theta.acos();
+
+        // TODO: When going left/right this should be around 90 degrees
+        println!("Direction rotation: {:?}", angle_rads);
+        println!("Direction: {:?}", self.direction);
 
         // Bow
         let mut trigons = Vec::new();
         let mut bow = Vec::new();
         let l1_p1_x  = 0.0 - (self.size * 1) as f32;
         let l1_p1_y  = 0.0 - (self.size * 1) as f32;
-        bow.push(Vector{x: l1_p1_x, y: l1_p1_y});
+        let rot = rotate_point(&Vector{x: l1_p1_x, y: l1_p1_y}, &Vector{x:0.0, y:0.0}, angle_rads);
+        bow.push(rot);
+        // bow.push(Vector{x: l1_p1_x, y: l1_p1_y});
         let l1_p2_x = 0.0;
         let l1_p2_y = 0.0 - (self.size * 3) as f32;
-        bow.push(Vector{x: l1_p2_x, y: l1_p2_y});
+        let rot = rotate_point(&Vector{x: l1_p2_x, y: l1_p2_y},&Vector{x:0.0, y:0.0} , angle_rads);
+        bow.push(rot);
+        // bow.push(Vector{x: l1_p2_x, y: l1_p2_y});
         let l2_p1_x  = (self.size * 1) as f32;
         let l2_p1_y  = 0.0 - (self.size * 1) as f32;
-        bow.push(Vector{x: l2_p1_x, y: l2_p1_y});
+        let rot = rotate_point(&Vector{x: l2_p1_x, y: l2_p1_y},&Vector{x:0.0, y:0.0} , angle_rads);
+        bow.push(rot);
+        // bow.push(Vector{x: l2_p1_x, y: l2_p1_y});
         trigons.push(bow);
 
         // Main body/middle section - right side

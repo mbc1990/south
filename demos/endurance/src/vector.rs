@@ -21,5 +21,9 @@ impl Vector {
     pub fn mul(&self, scalar: f32) -> Vector {
         return Vector{x: self.x * scalar, y: self.y * scalar};
     }
+
+    pub fn mag(&self) -> f32 {
+        return (self.x.powf(2.0) + self.y.powf(2.0)).sqrt();
+    }
 }
 

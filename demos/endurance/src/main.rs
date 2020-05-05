@@ -71,8 +71,8 @@ fn main() -> Result<(), String> {
     // let hud = Hud::new();
 
     let mut world = World::new(WIDTH, HEIGHT);
-    // world.init_test();
-    world.init_with_random_ice(NUM_BERGS);
+    world.init_test();
+    // world.init_with_random_ice(NUM_BERGS);
 
     let frame_length = 1000.0 / FPS as f32;
     'running: loop {
@@ -95,7 +95,7 @@ fn main() -> Result<(), String> {
         if elapsed.as_millis() < frame_length as u128 {
             thread::sleep(time::Duration::from_millis((frame_length - elapsed.as_millis() as f32) as u64));
         }
-        println!("FPS: {:}", 1000.0 / frame_start.elapsed().as_millis() as f32)
+        // println!("FPS: {:}", 1000.0 / frame_start.elapsed().as_millis() as f32)
     }
     Ok(())
 }
