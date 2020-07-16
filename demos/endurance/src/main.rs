@@ -73,8 +73,8 @@ fn main() -> Result<(), String> {
     // let hud = Hud::new();
 
     let mut world = World::new(WIDTH, HEIGHT);
-    // world.init_test();
-    world.init_with_random_ice(NUM_BERGS);
+    world.init_test();
+    // world.init_with_random_ice(NUM_BERGS);
 
     let frame_length = 1000.0 / FPS as f32;
     'running: loop {

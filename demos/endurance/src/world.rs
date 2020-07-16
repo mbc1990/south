@@ -10,6 +10,7 @@ use crate::geometry::{reflect, lines_intersect, euc_distance};
 use std::time::Instant;
 use crate::render_gl::Program;
 use crate::physics_manager::PhysicsManager;
+use crate::physics_element::PhysicsElement;
 
 pub struct World {
     size_x: u32,
@@ -91,7 +92,14 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        self.ices.push(Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300));
+        // let mut ice = Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300);
+        let mut ice = Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300);
+
+        // TODO: This is a little awkward...
+        let pe = ice.build_physics_element();
+        let physics_id = self.physics_manager.register_element(pe);
+        ice.physics_id = Some(physics_id);
+        self.ices.push(ice);
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }

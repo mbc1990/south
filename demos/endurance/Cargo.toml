@@ -8,7 +8,9 @@ edition = "2018"
 
 [dependencies]
 sdl2 = {version = "0.32.2", features = ["ttf", "gfx"]}
+uuid = {version = "0.8.1", features = ["v4"]}
 rand = "0.7.2"
+
 
 [dependencies.gl]
 git = "https://github.com/bjz/gl-rs"

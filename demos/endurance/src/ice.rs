@@ -4,6 +4,7 @@ use sdl2::pixels::Color;
 use crate::vector::{Vector};
 use crate::{GRID_SIZE, HEIGHT, WIDTH, BERG_MIN_SIZE, BERG_MAX_SIZE, DEBUG_MODE};
 use sdl2::gfx::primitives::DrawRenderer;
+use crate::physics_element::PhysicsElement;
 
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
@@ -13,7 +14,8 @@ pub struct Ice {
     // Maximum radius of circle underlying iceberg
     pub size: u32,
     pub perimeter: Vec<Vector>,
-    triangles: Vec<Vec<Vector>>
+    triangles: Vec<Vec<Vector>>,
+    pub physics_id: Option<String>
 }
 
 impl Ice {
@@ -49,7 +51,17 @@ impl Ice {
         let p3 = perimeter.last().unwrap().clone();
         triangles.push(vec![p1, p2, p3]);
 
-        Ice{direction, position, size, perimeter, triangles}
+        Ice{direction, position, size, perimeter, triangles, physics_id: None }
+    }
+
+    pub fn build_physics_element(&self) -> PhysicsElement {
+        let pe = PhysicsElement{
+            direction: self.direction,
+            position: self.position,
+            bounding_circle_radius: self.size as i32,
+            perimeter: self.perimeter.clone()
+        };
+        return pe;
     }
 
     pub fn calc_grid(&self) -> (i32, i32) {
