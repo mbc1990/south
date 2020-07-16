@@ -17,6 +17,8 @@ mod geometry;
 mod vector;
 mod keyboard_state;
 mod input_manager;
+mod physics_manager;
+mod physics_element;
 mod hud;
 pub mod render_gl;
 
@@ -25,7 +27,7 @@ pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
 pub const FPS: u32 = 30;
 pub const BOAT_SIZE: u32 = 25;
-pub const NUM_BERGS: i32 = 1024 * 4;
+pub const NUM_BERGS: i32 = 1024 * 2;
 pub const BERG_MIN_SIZE: u32 = 8;
 pub const BERG_MAX_SIZE: u32 = 75;
 pub const ICE_DECEL_FACTOR: f32 = 0.99;

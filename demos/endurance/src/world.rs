@@ -9,12 +9,18 @@ use std::collections::HashMap;
 use crate::geometry::{reflect, lines_intersect, euc_distance};
 use std::time::Instant;
 use crate::render_gl::Program;
+use crate::physics_manager::PhysicsManager;
 
 pub struct World {
     size_x: u32,
     size_y: u32,
     ices: Vec<Ice>,
-    boat: Boat
+    boat: Boat,
+    physics_manager: PhysicsManager
+    /*
+    PhysicsManager
+
+    */
 }
 
 impl World {
@@ -22,7 +28,8 @@ impl World {
         // Populate the world with some randomly positioned ice bergs
         let ice = Vec::new();
         let boat = Boat::new(Vector{ x: (size_x / 2) as f32, y: (size_y / 2) as f32 }, BOAT_SIZE);
-        World{size_x, size_y, ices: ice, boat: boat}
+        let pm = PhysicsManager::new();
+        World{size_x, size_y, ices: ice, boat: boat, physics_manager: pm}
     }
 
     // TODO: Make these controls more rudder-like (boat rotates)
@@ -186,6 +193,7 @@ impl World {
         }
 
         // Update the boat position
+        // TODO: Position updates should happen *after* all the collisions are resolved
         self.boat.position = self.boat.position.add(&self.boat.direction);
 
         let ices = self.ices.iter_mut();
