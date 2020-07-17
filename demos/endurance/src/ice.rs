@@ -5,6 +5,7 @@ use crate::vector::{Vector};
 use crate::{GRID_SIZE, HEIGHT, WIDTH, BERG_MIN_SIZE, BERG_MAX_SIZE, DEBUG_MODE};
 use sdl2::gfx::primitives::DrawRenderer;
 use crate::physics_element::PhysicsElement;
+use crate::physics_manager::PhysicsManager;
 
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
@@ -79,13 +80,51 @@ impl Ice {
         }
         return (grid_x, grid_y);
     }
+    pub fn get_vertices(&self, offset: &Vector, physics_manager: &PhysicsManager) -> Vec<f32> {
+        let mut ret = Vec::new();
+        // TODO: Error checking
+        let pid = self.physics_id.clone().unwrap();
+        let pe = physics_manager.get_element(pid).unwrap();
+        for trigon in &self.triangles {
+            for vertex in trigon {
 
-    pub fn get_vertices(&self, offset: &Vector) -> Vec<f32> {
+                // Offset-adjusted points (position relative to an origin in the upper left corner of the visible screen)
+                // TODO: Get position from physics element
+                let pos_x = vertex.x + pe.position.x - offset.x;
+                let mut pos_y = vertex.y + pe.position.y - offset.y;
+                let pos_z = 0.0;
+
+                // NDC System has bottom left origin, so adjust our y value (top left origin) into that system
+                pos_y = HEIGHT as f32 - pos_y;
+
+                // Map these points into the normalized device coordinates space
+                let input_range = WIDTH as f32;
+                let output_range = 1.0 - -1.0;
+                let output_x = (pos_x - 0.0)*output_range / input_range + -1.0;
+
+                let input_range = HEIGHT as f32;
+                let output_range = 1.0 - -1.0;
+                let output_y = (pos_y - 0.0)*output_range / input_range + -1.0;
+                ret.push(output_x);
+                ret.push(output_y);
+                ret.push(pos_z);
+
+                // Colors
+                ret.push(0.878);
+                ret.push(0.882);
+                ret.push(0.901);
+            }
+        }
+        return ret;
+    }
+
+    pub fn get_vertices_old(&self, offset: &Vector) -> Vec<f32> {
         let mut ret = Vec::new();
         for trigon in &self.triangles {
             for vertex in trigon {
 
                 // Offset-adjusted points (position relative to an origin in the upper left corner of the visible screen)
+                // TODO: Get position from physics element
                 let pos_x = vertex.x + self.position.x - offset.x;
                 let mut pos_y = vertex.y + self.position.y - offset.y;
                 let pos_z = 0.0;

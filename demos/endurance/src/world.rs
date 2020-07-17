@@ -18,10 +18,6 @@ pub struct World {
     ices: Vec<Ice>,
     boat: Boat,
     physics_manager: PhysicsManager
-    /*
-    PhysicsManager
-
-    */
 }
 
 impl World {
@@ -92,15 +88,17 @@ impl World {
     }
 
     pub fn init_test(&mut self) {
-        // let mut ice = Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300);
-        let mut ice = Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 300);
-        let mut ice2 = Ice::new(Vector{x: 400.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(1.0), 300);
-
         // TODO: This is a little awkward...
+        let mut ice = Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 300);
         let pe = ice.build_physics_element();
         let physics_id = self.physics_manager.register_element(pe);
         ice.physics_id = Some(physics_id);
         self.ices.push(ice);
+
+        let mut ice2 = Ice::new(Vector{x: 400.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(1.0), 300);
+        let pe2 = ice2.build_physics_element();
+        let physics_id2 = self.physics_manager.register_element(pe2);
+        ice2.physics_id = Some(physics_id2);
         self.ices.push(ice2);
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
@@ -194,7 +192,10 @@ impl World {
 
         self.physics_manager.tick();
 
+        // TODO: Game logic, check win conditions
+
         // Each tick, compute the current grid position of each iceberg
+        /*
         // TODO: Should be behind some kind of grid manager api
         let mut grid = HashMap::new();
         for ice in self.ices.iter() {
@@ -294,6 +295,7 @@ impl World {
             ice.direction = ice.direction.mul(ICE_DECEL_FACTOR);
             ice.position = ice.position.add(&ice.direction);
         }
+        */
     }
 
     pub fn get_offset(&self) -> Vector {
@@ -307,7 +309,7 @@ impl World {
         // Thus each group of eighteen (6*3) represents a triangle.
         let mut vertices: Vec<f32> = Vec::new();
         for berg in &self.ices {
-            let mut berg_verts = berg.get_vertices(&offset);
+            let mut berg_verts = berg.get_vertices(&offset, &self.physics_manager);
             vertices.append(&mut berg_verts);
         }
 
