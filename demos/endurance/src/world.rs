@@ -93,13 +93,15 @@ impl World {
 
     pub fn init_test(&mut self) {
         // let mut ice = Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300);
-        let mut ice = Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(0.0), 300);
+        let mut ice = Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 300);
+        let mut ice2 = Ice::new(Vector{x: 400.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(1.0), 300);
 
         // TODO: This is a little awkward...
         let pe = ice.build_physics_element();
         let physics_id = self.physics_manager.register_element(pe);
         ice.physics_id = Some(physics_id);
         self.ices.push(ice);
+        self.ices.push(ice2);
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
         // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
     }
@@ -190,6 +192,8 @@ impl World {
 
         self.respond_to_input(keyboard_state);
 
+        self.physics_manager.tick();
+
         // Each tick, compute the current grid position of each iceberg
         // TODO: Should be behind some kind of grid manager api
         let mut grid = HashMap::new();
@@ -201,8 +205,9 @@ impl World {
         }
 
         // Update the boat position
+        // TODO: Implement via physics_manager
         // TODO: Position updates should happen *after* all the collisions are resolved
-        self.boat.position = self.boat.position.add(&self.boat.direction);
+        // self.boat.position = self.boat.position.add(&self.boat.direction);
 
         let ices = self.ices.iter_mut();
         for ice in ices {
