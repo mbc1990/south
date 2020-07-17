@@ -27,10 +27,11 @@ pub const WIDTH: u32 = 800*2;
 pub const HEIGHT: u32 = 800*2;
 pub const FPS: u32 = 30;
 pub const BOAT_SIZE: u32 = 25;
-pub const NUM_BERGS: i32 = 1024 * 2;
+pub const NUM_BERGS: i32 = 1000;
 pub const BERG_MIN_SIZE: u32 = 8;
-pub const BERG_MAX_SIZE: u32 = 75;
-pub const ICE_DECEL_FACTOR: f32 = 0.99;
+pub const BERG_MAX_SIZE: u32 = 300;
+// pub const ICE_DECEL_FACTOR: f32 = 0.99;
+pub const ICE_DECEL_FACTOR: f32 = 1.0;
 pub const BOAT_ACCELERATION: f32 = 0.1;
 pub const HUD_FONT_PATH: &str = "/home/malcolm/Downloads/RobotoCondensed-Bold.ttf";
 pub const DEBUG_MODE: bool = false;
@@ -73,8 +74,8 @@ fn main() -> Result<(), String> {
     // let hud = Hud::new();
 
     let mut world = World::new(WIDTH, HEIGHT);
-    world.init_test();
-    // world.init_with_random_ice(NUM_BERGS);
+    // world.init_test();
+    world.init_with_random_ice(NUM_BERGS);
 
     let frame_length = 1000.0 / FPS as f32;
     'running: loop {

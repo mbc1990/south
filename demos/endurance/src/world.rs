@@ -37,13 +37,6 @@ impl World {
 
     // TODO: Rotation
     pub fn key_a(&mut self) {
-        /*
-        theta = deg2rad(angle);
-        cs = cos(theta);
-        sn = sin(theta);
-        px = x * cs - y * sn;
-        py = x * sn + y * cs;
-        */
         let dir = Vector{x:-1.0, y:0.0};
         self.boat.direction = self.boat.direction.add(&dir.mul(BOAT_ACCELERATION));
     }
@@ -70,7 +63,7 @@ impl World {
             let dir_x = rng.gen_range(-1.0,1.0);
             let dir_y = rng.gen_range(-1.0,1.0);
             let vel = rng.gen_range(0.0, 1.0);
-            let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:dir_x, y:dir_y}.mul(vel), berg_size);
+            let mut berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:dir_x, y:dir_y}.mul(vel), berg_size);
 
             // let berg = Ice::new(Vector{x:x as f32, y:y as f32}, Vector{x:0.0, y:0.0}, berg_size);
             let collisions = World::find_collisions_init(&self.ices, &berg);
@@ -80,6 +73,9 @@ impl World {
             }
 
             if collisions.len() == 0 {
+                let pe = berg.build_physics_element();
+                let physics_id = self.physics_manager.register_element(pe);
+                berg.physics_id = Some(physics_id);
                 self.ices.push(berg);
                 num_bergs -= 1;
                 println!("{:?} bergs remaining", num_bergs);
@@ -89,28 +85,17 @@ impl World {
 
     pub fn init_test(&mut self) {
         // TODO: This is a little awkward...
-        let mut ice = Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 300);
+        let mut ice = Ice::new(Vector{x: 1200.0, y: 1200.0}, Vector{x:-2.0, y: 0.0}.mul(1.0), 300);
         let pe = ice.build_physics_element();
         let physics_id = self.physics_manager.register_element(pe);
         ice.physics_id = Some(physics_id);
         self.ices.push(ice);
 
-        let mut ice2 = Ice::new(Vector{x: 400.0, y: 1200.0}, Vector{x:10.0, y: 0.0}.mul(1.0), 300);
+        let mut ice2 = Ice::new(Vector{x: 400.0, y: 1200.0}, Vector{x:2.0, y: 0.0}.mul(1.0), 300);
         let pe2 = ice2.build_physics_element();
         let physics_id2 = self.physics_manager.register_element(pe2);
         ice2.physics_id = Some(physics_id2);
         self.ices.push(ice2);
-        // self.ices.push(Ice::new(Vector{x: 1200.0, y: 200.0}, Vector{x:-10.0, y: 0.0}.mul(1.0), 100));
-        // self.ices.push(Ice::new(Vector{x: 1200.0, y: 400.0}, Vector{x:-10.0, y: -5.0}.mul(1.0), 100));
-    }
-
-    fn find_collisions<'a>(ices: Vec<&'a Ice>, ice: &Ice) -> Vec<&'a Ice> {
-        let collisions = ices.iter()
-            .filter(|other_ice| euc_distance(&other_ice.position, &ice.position) < (other_ice.size + ice.size) as f32)
-            .filter(|other_ice| &other_ice.position != &ice.position)
-            .map(|other_ice| *other_ice)
-            .collect();
-        return collisions;
     }
 
     // TODO: Refactor this - quick fix for random berg init
@@ -121,42 +106,6 @@ impl World {
             .collect();
         return collisions;
     }
-
-    fn get_boat_collision(boat: &Boat, ice: &Ice) -> Option<(Vector, Vector)> {
-        for i in 0..ice.perimeter.len() - 1 {
-            for k in 0..boat.perimeter.len() - 1 {
-                let l1_p1 = ice.position.add(ice.perimeter.get(i).unwrap());
-                let l1_p2 = ice.position.add(ice.perimeter.get(i + 1).unwrap());
-
-                let l2_p1 = boat.position.add(boat.perimeter.get(k).unwrap());
-                let l2_p2 = boat.position.add(boat.perimeter.get(k + 1).unwrap());
-
-                if lines_intersect(l1_p1, l1_p2, l2_p1, l2_p2) {
-                    return Some((l2_p1, l2_p2));
-                }
-            }
-        }
-        return None;
-    }
-
-    // Compares line segments making up bergs to see if they actually interact
-    fn is_real_collision(ice_a: &Ice, ice_b: &Ice) -> bool {
-        for i in 0..ice_a.perimeter.len() - 1 {
-            for k in 0..ice_b.perimeter.len() - 1 {
-                let l1_p1 = ice_a.position.add(ice_a.perimeter.get(i).unwrap());
-                let l1_p2 = ice_a.position.add(ice_a.perimeter.get(i + 1).unwrap());
-
-                let l2_p1 = ice_b.position.add(ice_b.perimeter.get(k).unwrap());
-                let l2_p2 = ice_b.position.add(ice_b.perimeter.get(k + 1).unwrap());
-
-                if lines_intersect(l1_p1, l1_p2, l2_p1, l2_p2) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 
     fn respond_to_input(&mut self, keyboard_state: &KeyboardState) {
         if keyboard_state.w {
@@ -173,129 +122,12 @@ impl World {
         }
     }
 
-    fn get_grid_region_bergs(grid: &HashMap<i32, HashMap<i32, Vec<Ice>>>, grid_x: i32, grid_y: i32) -> Vec<&Ice> {
-        let mut in_grid = Vec::new();
-        if let Some(col) = grid.get(&grid_x) {
-            if let Some(bergs) = col.get(&grid_y) {
-                for berg in bergs {
-                    in_grid.push(berg);
-                }
-            }
-        }
-        return in_grid;
-    }
-
     // Called from event loop
     pub fn tick(&mut self, keyboard_state: &KeyboardState) {
 
         self.respond_to_input(keyboard_state);
-
         self.physics_manager.tick();
-
-        // TODO: Game logic, check win conditions
-
-        // Each tick, compute the current grid position of each iceberg
-        /*
-        // TODO: Should be behind some kind of grid manager api
-        let mut grid = HashMap::new();
-        for ice in self.ices.iter() {
-            let (grid_x, grid_y) = ice.calc_grid();
-            let col = grid.entry(grid_x).or_insert(HashMap::new());
-            let row = col.entry(grid_y).or_insert(Vec::new());
-            row.push(ice.clone());
-        }
-
-        // Update the boat position
-        // TODO: Implement via physics_manager
-        // TODO: Position updates should happen *after* all the collisions are resolved
-        // self.boat.position = self.boat.position.add(&self.boat.direction);
-
-        let ices = self.ices.iter_mut();
-        for ice in ices {
-
-            // Update ice position if it's colliding with the boat
-            if let Some((_p1, _p2)) = World::get_boat_collision(&self.boat, &ice) {
-                ice.direction = self.boat.direction.mul(1.5);
-            }
-
-            let (grid_x, grid_y) = ice.calc_grid();
-
-            // Colocated bergs - hopefully only a few
-            let mut possible_collisions = World::get_grid_region_bergs(&grid, grid_x, grid_y);
-            // let mut possible_collisions = Vec::new();
-            // possible_collisions.append(&mut others_in_grid.clone());
-
-            // Grid regions are squares, so the berg can be colliding with objects in up to three
-            // more grid regions adjacent to the one the center of the berg is in.
-            // THIS IS TRUE ONLY WHEN THE GRID SIZE IS GREATER THAN 2 * MAX_BERG_SIZE
-            // The bounds here are a little tricky. Our ice might be completely within its grid, but collide with
-            // another berg at the edge of an adjacent grid
-            let x_1 = (ice.position.x - ice.size as f32) < ((grid_x * GRID_SIZE as i32) + BERG_MAX_SIZE as i32) as f32;
-            let x_2 = (ice.position.x + ice.size as f32) > (((grid_x + 1) * GRID_SIZE as i32) - BERG_MAX_SIZE as i32) as f32;
-            let y_1 = (ice.position.y - ice.size as f32) < ((grid_y * GRID_SIZE as i32) + BERG_MAX_SIZE as i32) as f32;
-            let y_2 = (ice.position.y + ice.size as f32) > (((grid_y + 1) * GRID_SIZE as i32) - BERG_MAX_SIZE as i32) as f32;
-
-            if x_1 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y);
-                possible_collisions.append(&mut to_append.clone());
-            }
-            if x_2 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x + 1, grid_y);
-                possible_collisions.append(&mut to_append.clone());
-            }
-            if y_1 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x, grid_y - 1);
-                possible_collisions.append(&mut to_append.clone());
-            }
-            if y_2 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x, grid_y + 1);
-                possible_collisions.append(&mut to_append.clone());
-            }
-
-            // Upper left corner
-            if x_1 && y_1 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y - 1);
-                possible_collisions.append(&mut to_append.clone());
-            }
-
-            // Lower left corner
-            if x_1 && y_2 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x - 1, grid_y + 1);
-                possible_collisions.append(&mut to_append.clone());
-            }
-
-            // Upper right corner
-            if x_2 && y_1 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x + 1, grid_y - 1);
-                possible_collisions.append(&mut to_append.clone());
-            }
-
-            // Lower right corner
-            if x_2 && y_2 {
-                let to_append = World::get_grid_region_bergs(&grid, grid_x + 1, grid_y + 1);
-                possible_collisions.append(&mut to_append.clone());
-            }
-
-            // Collisions from circular bounding box
-            let collisions = World::find_collisions(possible_collisions, &ice);
-            for collision in collisions {
-
-                // Don't collide with yourself
-                // TODO: Use uuid instead of position
-                if collision.position.x == ice.position.x && collision.position.y == ice.position.y {
-                    continue;
-                }
-
-                if World::is_real_collision(&ice, &collision) {
-                    ice.direction = reflect(ice.position, ice.direction, collision.position, collision.direction);
-                }
-            }
-
-            // Collisions reduce velocity overall
-            ice.direction = ice.direction.mul(ICE_DECEL_FACTOR);
-            ice.position = ice.position.add(&ice.direction);
-        }
-        */
+        // TODO: Game logic
     }
 
     pub fn get_offset(&self) -> Vector {
@@ -313,8 +145,9 @@ impl World {
             vertices.append(&mut berg_verts);
         }
 
-        let mut boat_verts = self.boat.get_vertices(&offset);
-        vertices.append(&mut boat_verts);
+        // TODO: This DISABLES drawing the boat
+        // let mut boat_verts = self.boat.get_vertices(&offset);
+        // vertices.append(&mut boat_verts);
 
         let num_indices= vertices.len() as i32 / 6;
 
@@ -382,9 +215,5 @@ impl World {
                 num_indices,             // number of indices to be rendered
             );
         }
-
-        // TODO: Draw boat with opengl
-        // self.boat.draw_gl(program);
-
     }
 }
