@@ -18,6 +18,15 @@ pub struct World {
     ices: Vec<Ice>,
     boat: Boat,
     physics_manager: PhysicsManager
+    /*
+        GraphicsManager
+            - init -> Set up shaders
+            - set_camera_position
+            - set_camera_rotation
+            - draw_objects(Vec<&dyn TriangleBasedDrawable>)
+                   object.get_vertices()
+
+    */
 }
 
 impl World {
@@ -134,6 +143,10 @@ impl World {
         return self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
     }
 
+    pub fn draw(&self) {
+
+    }
+
     pub fn draw_gl(&self, program: &Program) {
         let offset = self.boat.position.sub(&Vector{x: (self.size_x / 2) as f32, y: (self.size_y / 2) as f32 });
 
@@ -159,10 +172,10 @@ impl World {
         unsafe {
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
             gl::BufferData(
-                gl::ARRAY_BUFFER,                                                       // target
-                (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
-                vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
-                gl::STATIC_DRAW,                               // usage
+                gl::ARRAY_BUFFER,
+                (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr,
+                vertices.as_ptr() as *const gl::types::GLvoid,
+                gl::STATIC_DRAW,
             );
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }

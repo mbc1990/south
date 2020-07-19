@@ -10,11 +10,11 @@ use crate::physics_manager::PhysicsManager;
 // Represents a discrete piece of ice
 #[derive(Debug, Clone)]
 pub struct Ice {
-    pub direction: Vector,
-    pub position: Vector,
+    pub direction: Vector,  // TODO: Delete
+    pub position: Vector, // TODO: Delete
     // Maximum radius of circle underlying iceberg
     pub size: u32,
-    pub perimeter: Vec<Vector>,
+    pub perimeter: Vec<Vector>, // TODO: Delete
     triangles: Vec<Vec<Vector>>,
     pub physics_id: Option<String>
 }
@@ -65,21 +65,6 @@ impl Ice {
         return pe;
     }
 
-    pub fn calc_grid(&self) -> (i32, i32) {
-        let mut grid_x = (self.position.x / GRID_SIZE as f32) as i32;
-        let mut grid_y = (self.position.y / GRID_SIZE as f32) as i32;
-
-        // Offset grid regions of negative positions due to integer division giving region 0
-        // when a number x i -1.0 < x < 1.0
-        // There's probably a more elegant way of doing this
-        if self.position.x < 0.0 {
-            grid_x -= 1;
-        }
-        if self.position.y < 0.0 {
-            grid_y -= 1;
-        }
-        return (grid_x, grid_y);
-    }
     pub fn get_vertices(&self, offset: &Vector, physics_manager: &PhysicsManager) -> Vec<f32> {
         let mut ret = Vec::new();
         // TODO: Error checking

@@ -33,10 +33,12 @@ impl PhysicsManager {
         return uuid;
     }
 
+    // TODO: Take reference
     pub fn get_element(&self, physics_id: String) -> Option<&PhysicsElement> {
        self.elements.get(&physics_id)
     }
 
+    // TODO: Take reference
     pub fn get_element_mut(&mut self, physics_id: String) -> Option<&mut PhysicsElement> {
         self.elements.get_mut(&physics_id)
     }
@@ -83,7 +85,7 @@ impl PhysicsManager {
             row.push((*el).clone());
         }
 
-        // TODO: Initialize new elements map
+        // Initialize new elements map
         let mut new_elements = HashMap::new();
 
         for (uuid, el) in self.elements.iter() {
@@ -148,7 +150,6 @@ impl PhysicsManager {
             }
 
             // Collisions from circular bounding box
-            // let cbb_collisions = World::find_collisions(possible_collisions, &ice);
             let cbb_collisions: Vec<&PhysicsElement> = possible_collisions.iter()
                 .filter(|other_el| euc_distance(&other_el.position, &el.position) < (other_el.bounding_circle_radius + el.bounding_circle_radius) as f32)
                 .filter(|other_el| & other_el.position != & el.position)  // TODO: Should check UUIDs (those aren't on PhysicsElements currently)
@@ -164,7 +165,6 @@ impl PhysicsManager {
                 }
 
                 if PhysicsManager::is_real_collision(&el, &collision) {
-                    // ice.direction = reflect(ice.position, ice.direction, collision.position, collision.direction);
                     new_el.direction = reflect(el.position, el.direction, collision.position, collision.direction);
                 }
             }
